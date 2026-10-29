@@ -55,16 +55,13 @@ Two subagents were still running when Claude stopped. Check with `git status`.
    - Run `python -m pytest -q tests/test_word_com_tools.py`. These tests use a HIDDEN `DispatchEx` Word instance; never touch the user's open Word.
    - If they pass, commit.
    - If the files are incomplete, finish them. The tool contract is: `word_insert_chart`, `word_insert_smartart`, `word_insert_diagram` (flowchart, wbs, network, gantt), `word_insert_toc`, `word_insert_caption`, `word_insert_cross_reference`, `word_update_fields`, `word_insert_section_break`, `word_set_header_footer`, `word_track_changes`, `word_add_comment`, `word_modify_style`, `word_apply_style`, `word_link_numbering_to_headings`, `word_set_checkbox`, `word_table_clone_row`.
-2. **Taskpane UI**: `web/taskpane.js`, `web/index.html`, `web/taskpane.css`. It covers:
-   - a history drawer from `/api/chats`;
-   - `chat_id` continuity, with no `/api/agent/reset` on load;
-   - a model picker from `/api/models`;
-   - a quota card with one-click retry on another model;
-   - skills, plan and analysis cards;
-   - escaped markdown;
-   - removal of the fake canned answers.
-   
-   Check it with `node --check web/taskpane.js` and `node --test tests/js/insert-ooxml.test.mjs tests/js/word-agent.test.mjs tests/js/fill-cells.test.mjs` (list the files; passing the directory fails on Windows). Then review and commit.
+2. **Taskpane UI**: this one is now COMMITTED. It added the history drawer, model picker, quota card with retry, plan, skills and analysis cards, and safe markdown. JS tests: `node --test tests/js/insert-ooxml.test.mjs tests/js/word-agent.test.mjs tests/js/fill-cells.test.mjs tests/js/taskpane-utils.test.mjs` (27 pass). Gaps it found, to do:
+   - add a **Stop button** that calls `POST /api/agent/cancel`;
+   - give the "already running" error a `code`;
+   - make `/api/chats/{id}` return the plans and tool calls per turn, so a reopened chat shows its cards;
+   - add an endpoint to start sign-in (see M6);
+   - send display names for model families from `/api/models`;
+   - unsaved documents (empty `doc_url`) cannot resume a chat.
 
 ## REMAINING WORK (in order)
 1. **Wire the COM tools into the agent.**
