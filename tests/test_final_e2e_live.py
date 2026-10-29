@@ -18,6 +18,7 @@ import zipfile
 import urllib.request
 import urllib.error
 import http.client
+import pytest
 
 DAEMON_URL = "https://localhost:18890"
 
@@ -26,6 +27,20 @@ def get_ssl_context():
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     return ctx
+
+def is_daemon_running():
+    try:
+        ctx = get_ssl_context()
+        req = urllib.request.Request(f"{DAEMON_URL}/api/auth/status")
+        with urllib.request.urlopen(req, context=ctx, timeout=1.0) as res:
+            return res.status == 200
+    except Exception:
+        return False
+
+pytestmark = pytest.mark.skipif(
+    not is_daemon_running(),
+    reason="Live daemon not running at https://localhost:18890"
+)
 
 def http_post(url, data_dict=None, max_retries=2):
     ctx = get_ssl_context()
