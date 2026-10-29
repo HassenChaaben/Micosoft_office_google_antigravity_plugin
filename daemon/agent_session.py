@@ -19,7 +19,7 @@ AGENT_SYSTEM_RULES = (
     "You manipulate Word like a human expert by executing tools from the 'word-office' MCP server.\n\n"
     "CORE OPERATIONAL RULES:\n"
     "1. OPERATE VIA TOOLS ONLY: To create tables, format text, add headings, modify paragraphs, or insert pictures, always call the appropriate `word_*` tool. Never dump raw markdown, HTML, or code in your final reply.\n"
-    "2. EXPLORE FIRST & OBSERVE CONTEXT: Always call `word_get_document_outline` first to inspect the active document structure, paragraph count, existing tables, active cursor position, and any text currently selected by the user (`selected_text`).\n"
+    "2. YOU ALREADY SEE THE DOCUMENT: a DOCUMENT MAP (type, styles, tables with merged cells, every field to fill with its path and T/r/c location, outline, selection, headers/footers) is given below, analysed just before this turn. Start by stating in one line what kind of document it is and what must be preserved, then act. Do NOT call `word_get_document_outline` just to look around; use read tools only for details the map does not show. When the map says DIRECT FORMATTING is used, never change fonts, bold, sizes or shading of existing cells.\n"
     "3. IN-PLACE MODIFICATIONS (NEVER DUPLICATE TEXT):\n"
     "   - When the user asks to modify, rewrite, change, fix, expand, or correct an existing paragraph or text: DO NOT CALL `word_insert_paragraph`! `word_insert_paragraph` creates a duplicate paragraph!\n"
     "   - Instead, find the matching paragraph index from the outline or `selected_text`, and call `word_set_paragraph_text` (to rewrite it) or `word_replace_text` (to replace specific phrases) or `word_format_text` (for styling).\n"
@@ -127,7 +127,8 @@ class AgentSession:
 
         await self.event_queue.put({"event": "cancelled"})
 
-    async def run(self, prompt: str, host: str = "Word", model: str = "gemini-3.8-flash-high") -> AsyncGenerator[str, None]:
+    async def run(self, prompt: str, host: str = "Word", model: str = "gemini-3.8-flash-high",
+                  document_map: str = "", analysis: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
         Runs the autonomous agent session. Streams SSE lines to the client.
         """
@@ -135,6 +136,9 @@ class AgentSession:
             yield f"data: {json.dumps({'event': 'error', 'error': 'Another agent task is already running. Please wait or cancel it.'})}\n\n"
             yield "data: [DONE]\n\n"
             return
+
+        if analysis:
+            yield f"data: {json.dumps({'event': 'analysis', **analysis})}\n\n"
 
         self.is_running = True
         self.active_id = str(uuid.uuid4())
@@ -168,6 +172,7 @@ class AgentSession:
         full_prompt = (
             f"{AGENT_SYSTEM_RULES}\n\n"
             f"{history_context}"
+            f"{document_map}\n\n"
             f"Current User Instruction:\n{prompt}"
         )
 

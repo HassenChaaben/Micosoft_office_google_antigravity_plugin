@@ -44,6 +44,45 @@
      * @param {string} callId
      * @returns {Promise<object>} Result object { ok: boolean, ... }
      */
+    /**
+     * Perception: read the whole document as OOXML (one call, fast), plus selection,
+     * headers/footers and identity, so the daemon can analyse it before the model acts.
+     */
+    async captureDocumentContext() {
+      const ctx = { document_ooxml: '', selection: '', headers_footers: [], doc_url: '', doc_title: '' };
+      try {
+        ctx.doc_url = (Office.context.document && Office.context.document.url) || '';
+        ctx.doc_title = ctx.doc_url ? ctx.doc_url.split(/[\\/]/).pop() : '';
+        await Word.run(async (context) => {
+          const ooxml = context.document.body.getOoxml();
+          const sel = context.document.getSelection();
+          sel.load('text');
+          const sections = context.document.sections;
+          sections.load('items');
+          await context.sync();
+          ctx.document_ooxml = ooxml.value;
+          ctx.selection = (sel.text || '').trim().slice(0, 2000);
+
+          const parts = [];
+          sections.items.slice(0, 5).forEach((section, i) => {
+            ['Primary', 'FirstPage'].forEach((kind) => {
+              const h = section.getHeader(kind); h.load('text');
+              const f = section.getFooter(kind); f.load('text');
+              parts.push({ i, kind, h, f });
+            });
+          });
+          await context.sync();
+          parts.forEach(({ i, kind, h, f }) => {
+            if (h.text && h.text.trim()) ctx.headers_footers.push(`section ${i + 1} header (${kind}): ${h.text.trim().slice(0, 200)}`);
+            if (f.text && f.text.trim()) ctx.headers_footers.push(`section ${i + 1} footer (${kind}): ${f.text.trim().slice(0, 200)}`);
+          });
+        });
+      } catch (e) {
+        console.warn('[WordAgent] captureDocumentContext failed:', e);
+      }
+      return ctx;
+    }
+
     async executeTool(toolName, args, callId) {
       console.log(`[WordAgent] Executing tool: ${toolName}`, args);
       const startTime = Date.now();

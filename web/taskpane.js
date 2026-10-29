@@ -697,13 +697,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+      // Perceive first: the daemon analyses the document before the model sees the prompt.
+      const docContext = window.wordAgent ? await window.wordAgent.captureDocumentContext() : {};
       const response = await fetch('/api/agent/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: text,
           host: 'Word',
-          model: modelSelect.value
+          model: modelSelect.value,
+          ...docContext
         })
       });
 
@@ -735,6 +738,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           let ev;
           try { ev = JSON.parse(dataStr); } catch (_) { continue; }
+
+          if (ev.event === 'analysis') {
+            const card = document.createElement('div');
+            card.className = 'agent-step-chip done agent-analysis-card';
+            card.innerHTML = `<span>🔎 Analysed document: ${escapeHtml(ev.headline || ev.doc_type || '')}</span>`;
+            stepsContainer.appendChild(card);
+            scrollChatToBottom();
+            continue;
+          }
 
           if (ev.event === 'tool_call') {
             if (activeSpinnerChip) {

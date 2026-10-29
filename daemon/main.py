@@ -27,6 +27,9 @@ from .mcp_bridge import mcp_bridge
 from .mcp_server import router as mcp_router
 from .agent_session import agent_session
 from .antigravity_backend import ensure_mcp_registered
+from .office.perception import Perception
+
+perception = Perception()
 
 app = FastAPI(title="Gemini Antigravity Office Daemon", version="1.0.0")
 app.include_router(mcp_router)
@@ -165,8 +168,11 @@ async def agent_run(request: Request):
     prompt = payload.get("prompt", "")
     host = payload.get("host", "Word")
     model = payload.get("model", "gemini-3.8-flash-high")
+    perceived = await perception.analyze(payload)
     return StreamingResponse(
-        agent_session.run(prompt=prompt, host=host, model=model),
+        agent_session.run(prompt=prompt, host=host, model=model,
+                          document_map=perceived.map_text,
+                          analysis={**perceived.summary, "cached": perceived.cached}),
         media_type="text/event-stream"
     )
 
