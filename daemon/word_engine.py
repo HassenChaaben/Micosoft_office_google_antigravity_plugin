@@ -128,9 +128,9 @@ class WordEngine:
 
         try:
             try:
-                _ = app.ActiveDocument
+                doc = app.ActiveDocument
             except Exception:
-                app.Documents.Add()
+                doc = app.Documents.Add()
 
             # If structured Markdown report, insert formatted HTML via COM
             if any(marker in new_text for marker in ["# ", "| ", "> "]):
@@ -155,7 +155,7 @@ class WordEngine:
                 doc.Content.InsertAfter(new_text)
             return {"success": True, "replaced_length": len(new_text)}
         except Exception as e:
-            return {"success": True, "simulated": True, "note": str(e)}
+            return {"success": False, "error": str(e)}
 
     def insert_comment(self, comment_text: str) -> Dict[str, Any]:
         app = self._get_word_app()
@@ -171,7 +171,7 @@ class WordEngine:
             doc.Comments.Add(Range=sel.Range, Text=comment_text)
             return {"success": True, "comment": comment_text}
         except Exception as e:
-            return {"success": True, "simulated": True, "note": str(e)}
+            return {"success": False, "error": str(e)}
 
     def toggle_track_changes(self, enable: bool = True) -> Dict[str, Any]:
         app = self._get_word_app()
