@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from daemon.office.word_snapshot import build_snapshot
@@ -11,8 +12,12 @@ def _fill_first_empty_cell_after(xml: str, label: str, value: str) -> str:
     """Put `value` into the first empty paragraph that follows the label cell (test helper)."""
     i = xml.index(f">{label}<")
     j = min(x for x in (xml.find("<w:tc>", i), xml.find("<w:tc ", i)) if x != -1)
-    k = xml.index("</w:p>", j)
-    return xml[:k] + f"<w:r><w:t>{value}</w:t></w:r>" + xml[k:]
+    m = re.compile(r"<w:p(?=[ >/])[^>]*?(/?)>").search(xml, j)
+    run = f"<w:r><w:t>{value}</w:t></w:r>"
+    if m.group(1):  # self-closing empty paragraph
+        return xml[:m.start()] + m.group(0)[:-2] + ">" + run + "</w:p>" + xml[m.end():]
+    k = xml.index("</w:p>", m.end())
+    return xml[:k] + run + xml[k:]
 
 
 def test_reports_filled_fields_and_remaining_empty_ones():
