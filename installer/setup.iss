@@ -43,6 +43,7 @@ Source: "..\dist\gemini_office_daemon\*"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Web Taskpane Assets & HTML
 Source: "..\web\*"; DestDir: "{app}\web"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\daemon\skills\*"; DestDir: "{app}\daemon\skills"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\certs\*"; DestDir: "{app}\certs"; Excludes: "*.key"; Flags: ignoreversion recursesubdirs createallsubdirs
 
