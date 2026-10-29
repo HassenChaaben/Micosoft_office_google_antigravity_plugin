@@ -52,21 +52,92 @@ class AgentSession:
         self.turn_snapshot: Optional[Dict[str, Any]] = None
         self._current_turn_tools: list = []
         self._current_chat: Optional[str] = None
+        self._current_doc_url: Optional[str] = None
         self._store: Optional[Store] = None
         self._factory = None
         self._skills = None
         self._procs: Dict[str, Any] = {}
         self._sent_skills: Dict[str, set] = {}
+        self._com_worker: Optional[Any] = None
+        self._perception: Optional[Any] = None
+
+    @property
+    def com_worker(self):
+        if self._com_worker is None:
+            from .office.com_worker import ComWorker
+            self._com_worker = ComWorker()
+        return self._com_worker
+
+    @com_worker.setter
+    def com_worker(self, worker):
+        self._com_worker = worker
+
+    @property
+    def perception(self):
+        if self._perception is None:
+            from .office.perception import Perception
+            self._perception = Perception()
+        return self._perception
+
+    @perception.setter
+    def perception(self, p):
+        self._perception = p
+
+    def invalidate_perception_cache(self) -> None:
+        """Clear perception cache so verification and future turns see fresh document state."""
+        if self._perception is not None:
+            self._perception._cache.clear()
+        import sys
+        main_mod = sys.modules.get("daemon.main")
+        if main_mod and hasattr(main_mod, "perception"):
+            try:
+                main_mod.perception._cache.clear()
+            except Exception:
+                pass
+
+    async def refresh_perception(self, doc_url: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Invalidates cache and attempts to refresh the perception snapshot via COM worker."""
+        self.invalidate_perception_cache()
+        url = doc_url or getattr(self, "_current_doc_url", None)
+        if self._com_worker is not None:
+            try:
+                def _get_ooxml():
+                    doc = self.com_worker.get_document(url)
+                    return doc.Content.WordOpenXML, doc.Name, doc.FullName
+
+                ooxml, name, full_name = await self.com_worker.run(_get_ooxml)
+                if ooxml:
+                    payload = {
+                        "document_ooxml": ooxml,
+                        "doc_title": name,
+                        "doc_url": full_name,
+                    }
+                    res = await self.perception.analyze(payload)
+                    return res.snapshot
+            except Exception:
+                pass
+        return None
 
     async def verify_document(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """office_verify: capture the document again through the taskpane and compare with the turn start."""
-        from .office.perception import Perception
         from .office.verify import verify
 
+        self.invalidate_perception_cache()
         captured = await self.call_tool("__capture_document", {})
         if not captured.get("ok") or not captured.get("document_ooxml"):
+            if self._com_worker is not None:
+                try:
+                    def _get_doc_ooxml():
+                        doc = self.com_worker.get_document(getattr(self, "_current_doc_url", None))
+                        return doc.Content.WordOpenXML, doc.Name, doc.FullName
+                    ooxml, name, full_name = await self.com_worker.run(_get_doc_ooxml)
+                    if ooxml:
+                        captured = {"ok": True, "document_ooxml": ooxml, "doc_title": name, "doc_url": full_name}
+                except Exception:
+                    pass
+        if not captured.get("ok") or not captured.get("document_ooxml"):
             return {"ok": False, "error": captured.get("error") or "The document could not be read for verification."}
-        result = await Perception().analyze(captured)
+        result = await self.perception.analyze(captured)
         return verify(self.turn_snapshot, result.snapshot,
                       expect_all_fields_filled=args.get("expect_all_fields_filled", True))
 
@@ -136,7 +207,7 @@ class AgentSession:
 
     # --- configuration ---------------------------------------------------------------
 
-    def configure(self, store=None, process_factory=None, skills=None):
+    def configure(self, store=None, process_factory=None, skills=None, com_worker=None, perception=None):
         """Inject the history store, the agy process factory and the skill list (used by tests)."""
         if store is not None:
             self._store = store
@@ -144,6 +215,10 @@ class AgentSession:
             self._factory = process_factory
         if skills is not None:
             self._skills = skills
+        if com_worker is not None:
+            self._com_worker = com_worker
+        if perception is not None:
+            self._perception = perception
         self._procs = {}
         self._sent_skills = {}
 
@@ -179,6 +254,12 @@ class AgentSession:
         for proc, _, _ in list(self._procs.values()):
             await proc.close()
         self._procs.clear()
+        if self._com_worker is not None:
+            try:
+                self._com_worker.stop()
+            except Exception:
+                pass
+            self._com_worker = None
 
     # --- control -------------------------------------------------------------------------
 

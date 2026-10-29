@@ -8,8 +8,11 @@ import json
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 
+import time
+import uuid
 from .word_tools import get_tool_definitions, get_tool
 from .agent_session import agent_session
+from .office.word_com_tools import TOOLS as COM_TOOLS
 
 router = APIRouter()
 
@@ -104,6 +107,17 @@ DAEMON_TOOLS.append({
         "fields": {"type": "object", "description": "{key: value} — values are plain text."}},
         "required": ["fields"]},
 })
+COM_TOOL_NAMES = set(COM_TOOLS.keys())
+VISUAL_TOOLS = {"word_insert_chart", "word_insert_smartart", "word_insert_diagram"}
+
+for _tname, _tdata in COM_TOOLS.items():
+    DAEMON_TOOLS.append({
+        "name": _tname,
+        "description": _tdata["description"],
+        "inputSchema": _tdata["inputSchema"],
+        "destructive": _tdata.get("destructive", False),
+    })
+
 DAEMON_TOOL_NAMES = {t["name"] for t in DAEMON_TOOLS}
 
 
@@ -115,7 +129,6 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
     if name == "office_verify":
         return await agent_session.verify_document(args)
     if name == "word_insert_content":
-        import uuid
         from .office.ooxml_builder import build_ooxml, validate_blocks
 
         blocks = args.get("blocks") or []
@@ -171,6 +184,114 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
     if name == "memory_search":
         found = agent_session.store.search_memories(args.get("query") or "", _memory_scopes(doc_url), limit=10)
         return {"ok": True, "memories": [{"text": m["text"], "scope": m["scope"]} for m in found]}
+
+    if name in COM_TOOL_NAMES:
+        worker = agent_session.com_worker
+        tool_entry = COM_TOOLS[name]
+        fn = tool_entry["fn"]
+
+        call_args = dict(args)
+        # Adapt legacy paragraph_index / comment parameters if provided
+        if "paragraph_index" in call_args and "anchor" not in call_args:
+            call_args["anchor"] = f"p{call_args['paragraph_index']}"
+        if name == "word_add_comment" and "comment" in call_args and "text" not in call_args:
+            call_args["text"] = call_args["comment"]
+        if name == "word_insert_cross_reference" and call_args.get("kind") == "bookmark":
+            target = str(call_args.get("target_anchor", ""))
+            if target.startswith("ga:"):
+                call_args["target_anchor"] = f"ga_{target[3:].replace('-', '_').replace(':', '_')}"
+
+        started = time.monotonic()
+
+        def _execute_com():
+            try:
+                doc = worker.get_document(doc_url)
+            except Exception as exc:
+                return {"ok": False, "error": f"Failed to get Word document: {exc}"}
+
+            try:
+                res = fn(doc, **call_args)
+            except Exception as exc:
+                return {"ok": False, "error": f"COM tool '{name}' failed: {exc}"}
+
+            if not isinstance(res, dict):
+                return {"ok": True, "result": res}
+
+            if res.get("ok") and name in VISUAL_TOOLS:
+                anchor_id = str(call_args.get("id") or call_args.get("anchor_id") or uuid.uuid4().hex[:8])
+                if anchor_id.startswith("ga:"):
+                    anchor_id = anchor_id[3:]
+                ga_tag = f"ga:{anchor_id}"
+                clean_id = anchor_id.replace("-", "_").replace(":", "_")
+                bm_name = f"ga_{clean_id}"
+
+                target_range = None
+                if name == "word_insert_chart":
+                    idx = res.get("inline_shape_index")
+                    if idx is not None:
+                        try:
+                            ish = doc.InlineShapes(idx + 1)
+                            target_range = ish.Range
+                        except Exception:
+                            pass
+                elif name == "word_insert_smartart":
+                    anchor_str = str(res.get("anchor", ""))
+                    if anchor_str.startswith("i") and anchor_str[1:].isdigit():
+                        try:
+                            idx = int(anchor_str[1:])
+                            ish = doc.InlineShapes(idx + 1)
+                            target_range = ish.Range
+                        except Exception:
+                            pass
+                    if target_range is None:
+                        try:
+                            if doc.Shapes.Count > 0:
+                                target_range = doc.Shapes(doc.Shapes.Count).Anchor
+                        except Exception:
+                            pass
+                elif name == "word_insert_diagram":
+                    shape_name = res.get("name")
+                    if shape_name:
+                        try:
+                            shape = doc.Shapes(shape_name)
+                            target_range = shape.Anchor
+                        except Exception:
+                            pass
+
+                if target_range is not None:
+                    try:
+                        cc = doc.ContentControls.Add(1, target_range)  # 1 = wdContentControlRichText
+                        cc.Tag = anchor_id
+                        cc.Title = ga_tag
+                    except Exception:
+                        pass
+                    try:
+                        doc.Bookmarks.Add(bm_name, target_range)
+                    except Exception:
+                        pass
+                    if clean_id != bm_name:
+                        try:
+                            doc.Bookmarks.Add(clean_id, target_range)
+                        except Exception:
+                            pass
+
+                res["anchor"] = ga_tag
+                res["anchor_id"] = anchor_id
+                res["bookmark"] = bm_name
+
+            return res
+
+        res = await worker.run(_execute_com)
+
+        agent_session._current_turn_tools.append(f"{name}({json.dumps(args)})")
+        agent_session._record_tool(name, args, res, started)
+
+        if res.get("ok"):
+            agent_session.invalidate_perception_cache()
+            await agent_session.refresh_perception(doc_url)
+
+        return res
+
     return {"ok": False, "error": f"Unknown daemon tool {name}"}
 
 
@@ -221,11 +342,12 @@ async def mcp_post(request: Request):
 
     # 2. Tools List
     if method == "tools/list":
+        builtin_tools = [t for t in get_tool_definitions() if t["name"] not in DAEMON_TOOL_NAMES]
         return JSONResponse({
             "jsonrpc": "2.0",
             "id": msg_id,
             "result": {
-                "tools": get_tool_definitions() + DAEMON_TOOLS
+                "tools": builtin_tools + DAEMON_TOOLS
             }
         })
 
