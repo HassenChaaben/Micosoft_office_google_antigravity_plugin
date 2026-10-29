@@ -7,12 +7,15 @@ the internal Model Context Protocol (MCP) server, and the Microsoft Word Taskpan
 import os
 import json
 import uuid
+import time
 import asyncio
-import subprocess
 from typing import Dict, Any, Optional, AsyncGenerator
 
 from . import antigravity_backend
 from .word_tools import is_destructive
+from .core.agy_process import AgyProcess, Init, TextDelta, Thinking, ToolStatus, TurnDone, TurnError, find_agy
+from .core.skills import load_skills, parse_forced, render_for_prompt, route
+from .core.store import Store
 
 AGENT_SYSTEM_RULES = (
     "You are Gemini Antigravity, an expert autonomous AI agent operating directly inside Microsoft Word.\n"
@@ -28,6 +31,7 @@ AGENT_SYSTEM_RULES = (
     "5. INSERTING PICTURES & VISUALS: When asked to add a picture, logo, diagram, or chart, call `word_insert_image` with the URL, keyword ('logo', 'chart', 'diagram', 'banner'), or base64 data, and an optional caption.\n"
     "6. TABLE & DOCUMENT MANAGEMENT: Use `word_read_table(table_index)` to read table cells and `word_delete_table(table_index)` to remove a table if needed.\n"
     "7. BUILT-IN STYLES: Use standard built-in style names: 'Heading 1', 'Heading 2', 'Title', 'Normal'. Localization (French Titre 1, Italian Titolo 1) is handled automatically.\n"
+    "7b. PLAN AND REMEMBER: for any multi-step task call `agent_plan` first (short steps). When the user states a preference or a project fact that should last (format rules, names, codes, budget, dates), call `memory_save`; facts already remembered are listed in your prompt. Use `skill_load` to read an expert skill that is listed but not shown in full.\n"
     "8. VERIFY, THEN SUMMARIZE: after your edits ALWAYS call `office_verify` (pass expect_all_fields_filled=true when the user asked to fill/complete). Fix every issue it reports and verify again. Then give a short summary of what changed and anything left '[da definire]'.\n"
     "9. NO LOCAL OS/FILE EDITS: Never call file, shell, terminal, or browser tools. Only use `word-office` MCP tools.\n"
     "10. TEMPLATES, FORMS & PM DOCUMENTS:\n"
@@ -48,11 +52,15 @@ class AgentSession:
         self.is_running: bool = False
         self.event_queue: asyncio.Queue = asyncio.Queue()
         self.pending_calls: Dict[str, asyncio.Future] = {}
-        self.current_process: Optional[subprocess.Popen] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
-        self.conversation_history: list = []
         self.turn_snapshot: Optional[Dict[str, Any]] = None
         self._current_turn_tools: list = []
+        self._current_chat: Optional[str] = None
+        self._store: Optional[Store] = None
+        self._factory = None
+        self._skills = None
+        self._procs: Dict[str, Any] = {}
+        self._sent_skills: Dict[str, set] = {}
 
     async def verify_document(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """office_verify: capture the document again through the taskpane and compare with the turn start."""
@@ -65,11 +73,6 @@ class AgentSession:
         result = await Perception().analyze(captured)
         return verify(self.turn_snapshot, result.snapshot,
                       expect_all_fields_filled=args.get("expect_all_fields_filled", True))
-
-    def reset_history(self):
-        """Clears multi-turn conversation memory."""
-        self.conversation_history.clear()
-        self._current_turn_tools.clear()
 
     def is_active(self) -> bool:
         return self.is_running
@@ -100,8 +103,10 @@ class AgentSession:
             "destructive": is_destructive(name)
         })
 
+        started = time.monotonic()
         try:
             result = await asyncio.wait_for(future, timeout=timeout_sec)
+            self._record_tool(name, args, result, started)
             return result
         except asyncio.TimeoutError:
             return {
@@ -113,6 +118,16 @@ class AgentSession:
         finally:
             self.pending_calls.pop(call_id, None)
 
+    def _record_tool(self, name: str, args: Dict[str, Any], result: Dict[str, Any], started: float):
+        if not self._current_chat or name.startswith("__"):
+            return  # document captures are huge and not useful in history
+        try:
+            slim_args = {k: (v if len(json.dumps(v, ensure_ascii=False)) < 4000 else "[large]") for k, v in args.items()}
+            self.store.add_tool_call(self._current_chat, None, name, slim_args, result,
+                                     ok=bool(result.get("ok")), duration_ms=int((time.monotonic() - started) * 1000))
+        except Exception as e:
+            print(f"[AgentSession] could not record tool call {name}: {e}")
+
     def resolve_tool(self, call_id: str, result: Dict[str, Any]) -> bool:
         """
         Called by POST /api/agent/tool_result when the taskpane finishes executing an action in Word.
@@ -123,226 +138,187 @@ class AgentSession:
             return True
         return False
 
-    async def cancel(self):
-        """Cancels any running agent process and aborts pending tool calls."""
-        self.is_running = False
-        if self.current_process and self.current_process.poll() is None:
-            try:
-                self.current_process.kill()
-            except Exception:
-                pass
-            self.current_process = None
+    # --- configuration ---------------------------------------------------------------
 
+    def configure(self, store=None, process_factory=None, skills=None):
+        """Inject the history store, the agy process factory and the skill list (used by tests)."""
+        if store is not None:
+            self._store = store
+        if process_factory is not None:
+            self._factory = process_factory
+        if skills is not None:
+            self._skills = skills
+        self._procs = {}
+        self._sent_skills = {}
+
+    @property
+    def store(self) -> Store:
+        if self._store is None:
+            self._store = Store()
+        return self._store
+
+    def skills(self):
+        if self._skills is None:
+            self._skills = load_skills()
+        return self._skills
+
+    def _new_process(self, model: str, effort: Optional[str], conversation_id: Optional[str]) -> AgyProcess:
+        if self._factory is not None:
+            return self._factory(model, effort=effort, conversation_id=conversation_id)
+        return AgyProcess(find_agy(), model, effort=effort, conversation_id=conversation_id,
+                          extra_args=("--sandbox", "--dangerously-skip-permissions", "--disable-slash-commands"))
+
+    async def _process_for(self, chat: Dict[str, Any], model: str, effort: Optional[str]) -> AgyProcess:
+        """One warm agy process per chat; restarted (resuming the conversation) when the model changes."""
+        entry = self._procs.get(chat["id"])
+        if entry and (entry[1], entry[2]) == (model, effort):
+            return entry[0]
+        if entry:
+            await entry[0].close()
+        proc = self._new_process(model, effort, chat.get("agy_conversation_id"))
+        self._procs[chat["id"]] = (proc, model, effort)
+        return proc
+
+    async def shutdown(self):
+        for proc, _, _ in list(self._procs.values()):
+            await proc.close()
+        self._procs.clear()
+
+    # --- control -------------------------------------------------------------------------
+
+    async def cancel(self):
+        """Cancels the running turn (the agy conversation is resumed on the next message)."""
+        self.is_running = False
+        entry = self._procs.get(self._current_chat or "")
+        if entry:
+            await entry[0].cancel()
         for fut in list(self.pending_calls.values()):
             if not fut.done():
                 fut.cancel()
         self.pending_calls.clear()
-
         await self.event_queue.put({"event": "cancelled"})
+
+    def reset_history(self):
+        """Kept for the legacy /api/agent/reset endpoint: chats now live in the history database."""
+        self._current_turn_tools.clear()
+
+    # --- one turn ------------------------------------------------------------------------
+
+    def _compose_message(self, chat: Dict[str, Any], first_turn: bool, prompt: str, host: str,
+                         doc_type: Optional[str], document_map: str, doc_url: Optional[str]):
+        skills = self.skills()
+        forced, cleaned = parse_forced(prompt, known={s.name for s in skills})
+        routed = route(skills, host.lower(), doc_type, cleaned, forced=forced)
+        sent = self._sent_skills.setdefault(chat["id"], set())
+        new_full = [s for s in routed["full"] if s.name not in sent]
+        parts = []
+        if first_turn:
+            parts.append(AGENT_SYSTEM_RULES)
+        if new_full or first_turn:
+            parts.append(render_for_prompt({"full": new_full, "listed": routed["listed"]}))
+        scopes = ["global"] + ([f"doc:{doc_url}"] if doc_url else [])
+        memories = self.store.search_memories(cleaned, scopes, limit=8)
+        if memories:
+            parts.append("REMEMBERED USER PREFERENCES AND FACTS (from memory):\n"
+                         + "\n".join(f"- {m['text']}" for m in memories))
+        if document_map:
+            parts.append(document_map)
+        parts.append(f"User request:\n{cleaned}")
+        return "\n\n".join(parts), routed, new_full
 
     async def run(self, prompt: str, host: str = "Word", model: str = "gemini-3.8-flash-high",
                   document_map: str = "", analysis: Optional[Dict[str, Any]] = None,
-                  snapshot: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
-        """
-        Runs the autonomous agent session. Streams SSE lines to the client.
-        """
+                  snapshot: Optional[Dict[str, Any]] = None, chat_id: Optional[str] = None,
+                  doc_url: Optional[str] = None, doc_title: Optional[str] = None,
+                  effort: Optional[str] = None) -> AsyncGenerator[str, None]:
+        """Runs one agent turn in the chat's warm agy process. Streams SSE lines to the taskpane."""
+        def sse(obj):
+            return f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
+
         if self.is_running:
-            yield f"data: {json.dumps({'event': 'error', 'error': 'Another agent task is already running. Please wait or cancel it.'})}\n\n"
+            yield sse({"event": "error", "error": "Another agent task is already running. Please wait or cancel it."})
             yield "data: [DONE]\n\n"
             return
 
+        model = antigravity_backend.MODEL_MAP.get(model, model)
+        chat = self.store.get_chat(chat_id) if chat_id else None
+        if chat is None:
+            chat = self.store.create_chat(host=host, doc_url=doc_url, doc_title=doc_title, model=model, effort=effort)
+        else:
+            self.store.update_chat(chat["id"], model=model, effort=effort)
+        first_turn = not chat.get("agy_conversation_id") and chat["id"] not in self._sent_skills
+        self._current_chat = chat["id"]
+        self._current_doc_url = doc_url or chat.get("doc_url")
+        yield sse({"event": "chat", "chat_id": chat["id"], "title": chat.get("title")})
+
         self.turn_snapshot = snapshot
         if analysis:
-            yield f"data: {json.dumps({'event': 'analysis', **analysis})}\n\n"
+            yield sse({"event": "analysis", **analysis})
+
+        message, routed, new_full = self._compose_message(
+            chat, first_turn, prompt, host, (analysis or {}).get("doc_type"), document_map, doc_url)
+        yield sse({"event": "skills", "names": [s.name for s in routed["full"]]})
+        self.store.add_message(chat["id"], "user", prompt)
 
         self.is_running = True
         self.active_id = str(uuid.uuid4())
-        self._loop = asyncio.get_running_loop()
         self.event_queue = asyncio.Queue()
         self.pending_calls.clear()
         self._current_turn_tools.clear()
 
-        agy_path = antigravity_backend.find_agy()
-        if not agy_path:
-            self.is_running = False
-            err_msg = "Antigravity CLI (`agy`) not found. Please verify Antigravity is installed."
-            yield f"data: {json.dumps({'event': 'error', 'error': err_msg})}\n\n"
-            yield "data: [DONE]\n\n"
-            return
-
-        # Ensure MCP server word-office is registered with agy
-        antigravity_backend.ensure_mcp_registered()
-
-        history_context = ""
-        if self.conversation_history:
-            history_context = "PREVIOUS DIALOGUE HISTORY & EXECUTED ACTIONS IN THIS WORD DOCUMENT SESSION:\n"
-            for turn in self.conversation_history[-6:]:
-                history_context += f"[User]: {turn.get('content', '')}\n"
-                if turn.get("tools"):
-                    history_context += f"[Actions Executed]: {', '.join(turn['tools'])}\n"
-                if turn.get("summary"):
-                    history_context += f"[Assistant Summary]: {turn['summary']}\n"
-            history_context += "\n"
-
-        full_prompt = (
-            f"{AGENT_SYSTEM_RULES}\n\n"
-            f"{history_context}"
-            f"{document_map}\n\n"
-            f"Current User Instruction:\n{prompt}"
-        )
-
-        cmd = [
-            agy_path,
-            "--output-format", "stream-json",
-            "--model", antigravity_backend.MODEL_MAP.get(model, antigravity_backend.DEFAULT_MODEL),
-            "--disable-slash-commands",
-            "--sandbox",
-            "--dangerously-skip-permissions",
-            "--print-timeout", "240s",
-            "-p", full_prompt
-        ]
-
-        # Start child process in worker thread
-        os.makedirs(antigravity_backend.WORKSPACE_DIR, exist_ok=True)
         try:
-            self.current_process = subprocess.Popen(
-                cmd,
-                cwd=antigravity_backend.WORKSPACE_DIR,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                encoding="utf-8",
-                errors="replace",
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)
-            )
-        except OSError as e:
+            proc = await self._process_for(chat, model, effort)
+        except Exception as e:  # agy not installed, bad path...
             self.is_running = False
-            yield f"data: {json.dumps({'event': 'error', 'error': f'Failed to launch Antigravity agent process: {e}'})}\n\n"
+            yield sse({"event": "error", "error": f"Could not start the Antigravity agent: {e}", "code": "other"})
             yield "data: [DONE]\n\n"
             return
 
-        # Background reader task reading stdout lines from process and queuing text deltas/status
-        transcript_task: Optional[asyncio.Task] = None
+        answer: list = []
+        outcome = {"ok": False}
 
-        async def transcript_watcher(conv_id: str):
-            brain_dir = os.path.expandvars(r"%USERPROFILE%\.gemini\antigravity-cli\brain")
-            transcript_path = os.path.join(brain_dir, conv_id, ".system_generated", "logs", "transcript.jsonl")
-            processed_lines = 0
-            while self.is_running:
-                await asyncio.sleep(0.25)
-                if not os.path.isfile(transcript_path):
-                    continue
-                try:
-                    with open(transcript_path, "r", encoding="utf-8", errors="replace") as f:
-                        lines = f.readlines()
-                    if len(lines) > processed_lines:
-                        for line in lines[processed_lines:]:
-                            line = line.strip()
-                            if not line:
-                                continue
-                            try:
-                                obj = json.loads(line)
-                                thought = obj.get("thinking")
-                                if thought and isinstance(thought, str) and thought.strip():
-                                    await self.event_queue.put({
-                                        "event": "thinking",
-                                        "thought": thought.strip()
-                                    })
-                            except Exception:
-                                pass
-                        processed_lines = len(lines)
-                except Exception:
-                    pass
-
-        async def stdout_reader():
-            nonlocal transcript_task
-            loop = asyncio.get_running_loop()
-            proc = self.current_process
-            if not proc or not proc.stdout:
-                return
-
-            def read_line():
-                return proc.stdout.readline()
-
-            while self.is_running and proc.poll() is None:
-                line = await loop.run_in_executor(None, read_line)
-                if not line:
-                    break
-                line_str = line.strip()
-                if not line_str.startswith("{"):
-                    continue
-                try:
-                    data = json.loads(line_str)
-                except Exception:
-                    continue
-
-                event_type = data.get("event")
-                if event_type == "init":
-                    conv_id = data.get("conversation_id")
-                    if conv_id and not transcript_task:
-                        transcript_task = asyncio.create_task(transcript_watcher(conv_id))
-
-                elif event_type == "step_update":
-                    step = data.get("step_update", {})
-                    # Detect tool invocation in progress
-                    if step.get("step_type") == "tool" and step.get("state") == "ACTIVE":
-                        tool_info = step.get("tool_info", {})
-                        tool_name = tool_info.get("parameters", {}).get("ToolName") or step.get("tool_name", "")
-                        await self.event_queue.put({
-                            "event": "step_status",
-                            "status": "active",
-                            "tool": tool_name
-                        })
-                    # Stream text deltas from the final agent explanation
-                    elif step.get("step_type") == "agent_response":
-                        delta = step.get("text_delta")
-                        if delta:
-                            await self.event_queue.put({
-                                "event": "text",
-                                "delta": delta
-                            })
-                elif event_type == "result":
-                    res = data.get("result", {})
-                    if res.get("status") == "SUCCESS":
+        async def pump():
+            try:
+                async for ev in proc.send(message):
+                    if isinstance(ev, Init):
+                        if ev.conversation_id and ev.conversation_id != chat.get("agy_conversation_id"):
+                            self.store.set_conversation_id(chat["id"], ev.conversation_id)
+                            chat["agy_conversation_id"] = ev.conversation_id
+                    elif isinstance(ev, TextDelta):
+                        answer.append(ev.text)
+                        await self.event_queue.put({"event": "text", "delta": ev.text})
+                    elif isinstance(ev, Thinking):
+                        await self.event_queue.put({"event": "thinking", "thought": ev.text})
+                    elif isinstance(ev, ToolStatus):
+                        await self.event_queue.put({"event": "step_status", "status": ev.state, "tool": ev.tool})
+                    elif isinstance(ev, TurnDone):
+                        outcome["ok"] = True
                         await self.event_queue.put({"event": "agent_finished"})
-                    else:
-                        err = res.get("error") or res.get("message") or "Agent execution failed"
-                        await self.event_queue.put({"event": "error", "error": err})
+                    elif isinstance(ev, TurnError):
+                        if ev.code == "cancelled":
+                            await self.event_queue.put({"event": "cancelled"})
+                        else:
+                            await self.event_queue.put({"event": "error", "error": ev.message, "code": ev.code,
+                                                        "retry_after": ev.retry_after})
+            except Exception as e:
+                await self.event_queue.put({"event": "error", "error": f"Agent runtime error: {e}", "code": "other"})
 
-            if self.is_running:
-                await self.event_queue.put({"event": "agent_finished"})
-
-        reader_task = asyncio.create_task(stdout_reader())
-
-        response_deltas = []
+        pump_task = asyncio.create_task(pump())
         try:
-            # Yield events from event_queue until agent_finished or error
-            while self.is_running:
+            while True:
                 item = await self.event_queue.get()
-                ev = item.get("event")
-                if ev == "text" and item.get("delta"):
-                    response_deltas.append(item["delta"])
-                yield f"data: {json.dumps(item)}\n\n"
-                if ev in ("agent_finished", "error", "cancelled"):
+                yield sse(item)
+                if item.get("event") in ("agent_finished", "error", "cancelled"):
                     break
         finally:
-            turn_record = {
-                "role": "user",
-                "content": prompt,
-                "tools": list(self._current_turn_tools),
-                "summary": "".join(response_deltas).strip() if response_deltas else ""
-            }
-            self.conversation_history.append(turn_record)
             self.is_running = False
-            reader_task.cancel()
-            if transcript_task:
-                transcript_task.cancel()
-            if self.current_process and self.current_process.poll() is None:
-                try:
-                    self.current_process.kill()
-                except Exception:
-                    pass
-                self.current_process = None
+            if not pump_task.done():
+                pump_task.cancel()
+            text = "".join(answer).strip()
+            if text:
+                self.store.add_message(chat["id"], "assistant", text)
+            if outcome["ok"]:
+                self._sent_skills.setdefault(chat["id"], set()).update(s.name for s in new_full)
             yield "data: [DONE]\n\n"
 
 

@@ -64,7 +64,39 @@ DAEMON_TOOLS.append({
         "required": ["blocks"],
     },
 })
+DAEMON_TOOLS += [
+    {
+        "name": "agent_plan",
+        "description": "Show the user your plan BEFORE acting on any multi-step task (one short line per step, "
+                       "in the user's language). Then execute it and call office_verify at the end.",
+        "inputSchema": {"type": "object", "properties": {"steps": {"type": "array", "items": {"type": "string"}}},
+                        "required": ["steps"]},
+    },
+    {
+        "name": "skill_load",
+        "description": "Load the full instructions of an Office expert skill listed in your prompt (by name).",
+        "inputSchema": {"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"]},
+    },
+    {
+        "name": "memory_save",
+        "description": "Remember a durable user preference or project fact for future chats (e.g. 'subtitles centered, "
+                       "14pt', 'project code PRJ-2026-014, budget € 75.000,00'). scope 'document' = only this "
+                       "document, 'global' = every document.",
+        "inputSchema": {"type": "object", "properties": {
+            "text": {"type": "string"}, "scope": {"type": "string", "enum": ["document", "global"]}},
+            "required": ["text"]},
+    },
+    {
+        "name": "memory_search",
+        "description": "Search remembered preferences and project facts (this document + global).",
+        "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
+    },
+]
 DAEMON_TOOL_NAMES = {t["name"] for t in DAEMON_TOOLS}
+
+
+def _memory_scopes(doc_url):
+    return ["global"] + ([f"doc:{doc_url}"] if doc_url else [])
 
 
 async def run_daemon_tool(name: str, args: dict) -> dict:
@@ -83,6 +115,32 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
         res = await agent_session.call_tool(
             "word_insert_ooxml", {"ooxml": ooxml, "location": args.get("location") or "cursor", "block_id": block_id})
         return {**res, "block_id": block_id, "blocks": len(blocks)} if res.get("ok") else res
+    if name == "agent_plan":
+        steps = [str(s) for s in (args.get("steps") or []) if str(s).strip()]
+        if not steps:
+            return {"ok": False, "error": "Give at least one step."}
+        if agent_session._current_chat:
+            agent_session.store.add_plan(agent_session._current_chat, None, steps)
+        await agent_session.event_queue.put({"event": "plan", "steps": steps})
+        return {"ok": True, "steps": len(steps)}
+    if name == "skill_load":
+        wanted = (args.get("name") or "").strip().lstrip("/")
+        skill = next((s for s in agent_session.skills() if s.name == wanted), None)
+        if skill is None:
+            return {"ok": False, "error": f"No skill '{wanted}'. Available: "
+                    + ", ".join(s.name for s in agent_session.skills())}
+        return {"ok": True, "name": skill.name, "body": skill.body}
+    doc_url = getattr(agent_session, "_current_doc_url", None)
+    if name == "memory_save":
+        text = (args.get("text") or "").strip()
+        if not text:
+            return {"ok": False, "error": "Empty memory."}
+        scope = f"doc:{doc_url}" if args.get("scope", "document") == "document" and doc_url else "global"
+        mem = agent_session.store.add_memory(scope, text)
+        return {"ok": True, "id": mem["id"], "scope": scope}
+    if name == "memory_search":
+        found = agent_session.store.search_memories(args.get("query") or "", _memory_scopes(doc_url), limit=10)
+        return {"ok": True, "memories": [{"text": m["text"], "scope": m["scope"]} for m in found]}
     return {"ok": False, "error": f"Unknown daemon tool {name}"}
 
 

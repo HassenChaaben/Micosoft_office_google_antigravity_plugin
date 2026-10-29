@@ -28,6 +28,8 @@ from .mcp_server import router as mcp_router
 from .agent_session import agent_session
 from .antigravity_backend import ensure_mcp_registered
 from .office.perception import Perception
+from .core.agy_process import AgyModelsError, ModelCache, find_agy
+import asyncio
 
 perception = Perception()
 
@@ -173,9 +175,62 @@ async def agent_run(request: Request):
         agent_session.run(prompt=prompt, host=host, model=model,
                           document_map=perceived.map_text,
                           analysis={**perceived.summary, "cached": perceived.cached},
-                          snapshot=perceived.snapshot),
+                          snapshot=perceived.snapshot,
+                          chat_id=payload.get("chat_id"),
+                          doc_url=payload.get("doc_url"),
+                          doc_title=payload.get("doc_title"),
+                          effort=payload.get("effort")),
         media_type="text/event-stream"
     )
+
+_models_cache = ModelCache(ttl=600.0)
+
+
+def _list_models():
+    agy = find_agy()
+    return _models_cache.get(agy) if agy else []
+
+
+@app.get("/api/models")
+async def list_models_endpoint():
+    try:
+        models = await asyncio.to_thread(_list_models)
+        return {"models": models}
+    except AgyModelsError as e:
+        return JSONResponse({"models": [], "error": str(e), "code": e.code}, status_code=200)
+
+
+@app.get("/api/chats")
+async def list_chats_endpoint(host: str = None, doc_url: str = None, limit: int = 50):
+    return {"chats": agent_session.store.list_chats(host=host, doc_url=doc_url, limit=limit)}
+
+
+@app.get("/api/chats/{chat_id}")
+async def get_chat_endpoint(chat_id: str):
+    chat = agent_session.store.get_chat(chat_id)
+    if chat is None:
+        return JSONResponse({"error": "Chat not found"}, status_code=404)
+    return {
+        "chat": chat,
+        "messages": agent_session.store.list_messages(chat_id),
+        "tool_calls": agent_session.store.list_tool_calls(chat_id),
+    }
+
+
+@app.patch("/api/chats/{chat_id}")
+async def rename_chat_endpoint(chat_id: str, request: Request):
+    title = ((await request.json()) or {}).get("title", "").strip()
+    if not title or agent_session.store.get_chat(chat_id) is None:
+        return JSONResponse({"ok": False, "error": "Chat not found or empty title"}, status_code=400)
+    agent_session.store.rename_chat(chat_id, title)
+    return {"ok": True}
+
+
+@app.delete("/api/chats/{chat_id}")
+async def delete_chat_endpoint(chat_id: str):
+    agent_session.store.delete_chat(chat_id)
+    return {"ok": True}
+
 
 @app.post("/api/agent/tool_result")
 async def agent_tool_result(request: Request):
