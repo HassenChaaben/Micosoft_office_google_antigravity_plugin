@@ -26,6 +26,7 @@ HEX_RE = re.compile(r"^#?[0-9A-Fa-f]{6}$")
 LEVELS_RE = re.compile(r"^([1-9])-([1-9])$")
 INVALID_XML_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f￾￿]")
 MAX_LIST_DEPTH = 3
+LOCATION_RE = re.compile(r"^(after|before|replace):(.*)$", re.I | re.S)
 TABLE_WIDTH_DXA = 9638  # A4 with 2 cm margins; the table itself is 100 % (pct 5000)
 SDT_ALIAS = "Gemini Antigravity"
 TOC_PLACEHOLDER = "Aggiorna il sommario (F9)"
@@ -519,7 +520,27 @@ def _part(name: str, content_type: str, xml: str) -> str:
             f"<pkg:xmlData>{xml}</pkg:xmlData></pkg:part>")
 
 
-def build_ooxml(blocks: List[Dict[str, Any]], block_id: Optional[str] = None) -> str:
+def parse_location(location: Optional[str]) -> Tuple[str, str]:
+    """Parse a location string into (mode, anchor).
+
+    Modes: 'after', 'before', 'replace'.
+    Supports 'before:<anchor>', 'after:<anchor>', 'replace:<anchor>',
+    as well as plain anchors ('start', 'end', 'cursor', 'p12', 'T0', etc.).
+    """
+    loc = "end" if location is None else str(location).strip()
+    mode = "after"
+    m = LOCATION_RE.match(loc)
+    if m:
+        return m.group(1).lower(), m.group(2).strip() or "cursor"
+    if loc.lower() == "start":
+        return "before", "start"
+    if loc.lower() == "replace_selection":
+        return "replace", "cursor"
+    return mode, loc
+
+
+def build_ooxml(blocks: List[Dict[str, Any]], block_id: Optional[str] = None,
+                location: Optional[str] = None) -> str:
     """Build a flat-OPC package for `range.insertOoxml`. Raises ValueError listing every problem."""
     errors = validate_blocks(blocks)
     if errors:

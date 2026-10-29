@@ -13,7 +13,7 @@ shaded header row followed by empty rows is a record grid.
 import re
 import xml.etree.ElementTree as ET
 from collections import Counter
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 PKG = "{http://schemas.microsoft.com/office/2006/xmlPackage}"
@@ -120,10 +120,17 @@ def _row_cells(tr: ET.Element, ptr: List[int]) -> List[Dict[str, Any]]:
         span = int(_val(pr, "gridSpan") or 1)
         vm_el = None if pr is None else pr.find(W + "vMerge")
         vmerge = None if vm_el is None else (vm_el.get(W + "val") or "continue")
-        text = _text(tc).strip()
         bold = any(r.find(W + "rPr/" + W + "b") is not None for r in tc.iter(W + "r"))
-        first_p = ptr[0]
-        ptr[0] += len(list(tc.iter(W + "p")))
+        has_nested = tc.find(W + "tbl") is not None
+        if has_nested:
+            direct_ps = tc.findall(W + "p")
+            text = "".join("".join(t.text or "" for t in p.iter(W + "t")) for p in direct_ps).strip()
+            first_p = ptr[0]
+            ptr[0] += len(direct_ps)
+        else:
+            text = _text(tc).strip()
+            first_p = ptr[0]
+            ptr[0] += len(list(tc.iter(W + "p")))
         cells.append({
             "ci": ci, "gc": gc, "span": span, "vmerge": vmerge, "fill": _fill(pr),
             "text": text, "bold": bold, "p": first_p,
@@ -339,20 +346,36 @@ def build_snapshot(ooxml: str, extras: Optional[Dict[str, Any]] = None) -> Dict[
                 outline.append({"level": level, "text": text, "paragraph": idx})
         paragraphs.append(item)
 
+    def index_table(tbl: ET.Element, parent_info: Optional[Tuple[int, int, int]] = None):
+        nonlocal prev_table
+        start = ptr[0]
+        t_idx = len(tables)
+        info = _analyze_table(tbl, t_idx, ptr, prev_table)
+        info["first_paragraph"] = start
+        if parent_info is not None:
+            info["nested"] = True
+            info["parent_table"] = parent_info[0]
+            info["parent_row"] = parent_info[1]
+            info["parent_cell"] = parent_info[2]
+        tables.append(info)
+        prev_table = info
+        for tc_text in (_text(tc).strip() for tc in tbl.iter(W + "tc")):
+            if tc_text:
+                all_text.append(tc_text)
+
+        # Index nested tables found inside cells
+        for r_i, tr in enumerate(tbl.findall(W + "tr")):
+            for c_i, tc in enumerate(tr.findall(W + "tc")):
+                for nested_tbl in tc.findall(W + "tbl"):
+                    index_table(nested_tbl, parent_info=(t_idx, r_i, c_i))
+
     def visit_container(container: ET.Element):
         nonlocal prev_table
         for child in container:
             if child.tag == W + "p":
                 visit_paragraph(child)
             elif child.tag == W + "tbl":
-                start = ptr[0]
-                info = _analyze_table(child, len(tables), ptr, prev_table)
-                info["first_paragraph"] = start
-                tables.append(info)
-                prev_table = info
-                for tc_text in (_text(tc).strip() for tc in child.iter(W + "tc")):
-                    if tc_text:
-                        all_text.append(tc_text)
+                index_table(child)
             elif child.tag == W + "sdt":
                 # block content controls (e.g. agent-made "ga:<id>" blocks) can hold paragraphs and tables
                 content = child.find(W + "sdtContent")
