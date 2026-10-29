@@ -162,11 +162,66 @@
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
-  root.taskpaneUtils = { escapeHtml, renderInline, renderMarkdown, relativeTime };
+  function humanToolLabel(tool, args) {
+    args = args || {};
+    switch (tool) {
+      case 'word_insert_ooxml': return `Writing content into Word in one native operation (${args.location || 'cursor'})...`;
+      case '__capture_document': return 'Verifying the document (re-reading and checking quality)...';
+      case 'word_get_document_outline': return 'Reading Word document structure & paragraphs...';
+      case 'word_read_paragraphs': return `Reading paragraphs (${args.start_index}..${args.end_index || args.start_index})...`;
+      case 'word_search': return `Searching for "${args.search_text}"...`;
+      case 'word_insert_paragraph': return `Inserting paragraph (${args.style || 'Normal'}): "${(args.text || '').slice(0, 35)}..."`;
+      case 'word_insert_list': return `Inserting ${args.items ? args.items.length : 0} ${args.list_type || 'bullet'} items...`;
+      case 'word_insert_table': return `Inserting native Word table (${args.headers ? args.headers.join(', ') : 'table'})...`;
+      case 'word_insert_image': return `Inserting picture (${args.caption ? args.caption : (args.source || 'visual')})...`;
+      case 'word_format_table': return `Formatting table #${args.table_index} (${args.style || 'default'})...`;
+      case 'word_set_table_cell': return `Updating table cell [${args.row_index}, ${args.col_index}]: "${args.text}"`;
+      case 'word_add_table_row': return `Adding row to table #${args.table_index}...`;
+      case 'word_delete_table': return `Deleting table #${args.table_index}...`;
+      case 'word_read_table': return `Reading content of table #${args.table_index}...`;
+      case 'word_clear_document': return 'Clearing document body...';
+      case 'word_format_text': return `Applying text formatting to paragraph #${args.paragraph_index}...`;
+      case 'word_apply_style': return `Setting style "${args.style}" on paragraph #${args.paragraph_index}...`;
+      case 'word_add_comment': return `Adding review comment: "${args.comment}"`;
+      case 'word_insert_page_break': return 'Inserting page break...';
+      case 'word_select': return `Focusing cursor on paragraph #${args.paragraph_index}...`;
+      case 'word_set_paragraph_text': return `Rewriting paragraph #${args.paragraph_index}...`;
+      case 'word_batch_update_table_cells': return `Updating ${args.updates ? args.updates.length : 0} table cells in batch...`;
+      case 'word_fill_form_fields': return `Filling ${args.fields ? Object.keys(args.fields).length : 0} form fields in document...`;
+      case 'word_replace_text': return `Replacing "${args.search_text}" with "${args.replacement_text}"...`;
+      case 'word_delete_paragraph': return `Deleting paragraph #${args.paragraph_index}...`;
+      default: return `Executing ${tool}...`;
+    }
+  }
+
+  const FAMILY_LABELS = {
+    'gemini-3.8-flash': 'Gemini 3.8 Flash',
+    'gemini-4-argon': 'Gemini 4 Argon',
+    'claude-sonnet-5-5': 'Claude Sonnet 5.5',
+    'claude-opus-5-5': 'Claude Opus 5.5',
+    'gpt-oss-120b': 'GPT-OSS 120B'
+  };
+
+  function formatFamilyLabel(family, customLabels, models) {
+    if (!family) return 'Other';
+    const labels = customLabels || FAMILY_LABELS;
+    if (labels && labels[family]) return labels[family];
+    if (Array.isArray(models)) {
+      const matching = models.find(m => m && m.family === family && (m.family_label || m.family_display));
+      if (matching) return matching.family_label || matching.family_display;
+    }
+    return family
+      .replace(/(\d)-(\d)/g, '$1.$2')
+      .split('-')
+      .map(w => (/^[a-z]/.test(w) ? w.charAt(0).toUpperCase() + w.slice(1) : w.toUpperCase()))
+      .join(' ');
+  }
+
+  root.taskpaneUtils = { escapeHtml, renderInline, renderMarkdown, relativeTime, humanToolLabel, formatFamilyLabel, FAMILY_LABELS };
 })(typeof window !== 'undefined' ? window : globalThis);
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const { escapeHtml, renderMarkdown, relativeTime } = window.taskpaneUtils;
+  const { escapeHtml, renderMarkdown, relativeTime, humanToolLabel, formatFamilyLabel, FAMILY_LABELS } = window.taskpaneUtils;
   // DOM Elements
   const hostBadge = document.getElementById('hostBadge');
   const onboardingSection = document.getElementById('onboardingSection');
@@ -174,6 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const chatMessages = document.getElementById('chatMessages');
   const promptInput = document.getElementById('promptInput');
   const btnSend = document.getElementById('btnSend');
+  const btnStop = document.getElementById('btnStop');
   const btnFlyoutPlus = document.getElementById('btnFlyoutPlus');
   const flyoutMenu = document.getElementById('flyoutMenu');
   const btnGlobe = document.getElementById('btnGlobe');
@@ -800,10 +856,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   function updateSendButtonState() {
-    btnSend.disabled = promptInput.value.trim().length === 0 || isStreaming;
+    if (isStreaming) {
+      btnSend.classList.add('hidden');
+      if (btnStop) {
+        btnStop.classList.remove('hidden');
+        btnStop.disabled = false;
+      }
+    } else {
+      btnSend.classList.remove('hidden');
+      if (btnStop) {
+        btnStop.classList.add('hidden');
+      }
+      btnSend.disabled = promptInput.value.trim().length === 0;
+    }
   }
 
   btnSend.addEventListener('click', sendMessage);
+  if (btnStop) {
+    btnStop.addEventListener('click', async () => {
+      btnStop.disabled = true;
+      try {
+        await fetch('/api/agent/cancel', { method: 'POST' });
+      } catch (err) {
+        console.warn('[Taskpane] Cancel request error:', err);
+      }
+    });
+  }
 
   async function runWordAgent(text, assistantMsg, modelOverride) {
     const modelId = modelOverride || modelSelect.value;
@@ -856,40 +934,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
     }
 
-    function humanToolLabel(tool, args) {
-      switch (tool) {
-        case 'word_insert_ooxml': return `Writing content into Word in one native operation (${args.location || 'cursor'})...`;
-        case '__capture_document': return 'Verifying the document (re-reading and checking quality)...';
-        case 'word_get_document_outline': return 'Reading Word document structure & paragraphs...';
-        case 'word_read_paragraphs': return `Reading paragraphs (${args.start_index}..${args.end_index || args.start_index})...`;
-        case 'word_search': return `Searching for "${args.search_text}"...`;
-        case 'word_insert_paragraph': return `Inserting paragraph (${args.style || 'Normal'}): "${(args.text || '').slice(0, 35)}..."`;
-        case 'word_insert_list': return `Inserting ${args.items ? args.items.length : 0} ${args.list_type || 'bullet'} items...`;
-        case 'word_insert_table': return `Inserting native Word table (${args.headers ? args.headers.join(', ') : 'table'})...`;
-        case 'word_insert_image': return `Inserting picture (${args.caption ? args.caption : (args.source || 'visual')})...`;
-        case 'word_format_table': return `Formatting table #${args.table_index} (${args.style || 'default'})...`;
-        case 'word_set_table_cell': return `Updating table cell [${args.row_index}, ${args.col_index}]: "${args.text}"`;
-        case 'word_add_table_row': return `Adding row to table #${args.table_index}...`;
-        case 'word_delete_table': return `Deleting table #${args.table_index}...`;
-        case 'word_read_table': return `Reading content of table #${args.table_index}...`;
-        case 'word_clear_document': return `Clearing document body...`;
-        case 'word_format_text': return `Applying text formatting to paragraph #${args.paragraph_index}...`;
-        case 'word_apply_style': return `Setting style "${args.style}" on paragraph #${args.paragraph_index}...`;
-        case 'word_add_comment': return `Adding review comment: "${args.comment}"`;
-        case 'word_insert_page_break': return `Inserting page break...`;
-        case 'word_select': return `Focusing cursor on paragraph #${args.paragraph_index}...`;
-        case 'word_set_paragraph_text': return `Rewriting paragraph #${args.paragraph_index}...`;
-        case 'word_batch_update_table_cells': return `Updating ${args.updates ? args.updates.length : 0} table cells in batch...`;
-        case 'word_fill_form_fields': return `Filling ${args.fields ? Object.keys(args.fields).length : 0} form fields in document...`;
-        case 'word_replace_text': return `Replacing "${args.search_text}" with "${args.replacement_text}"...`;
-        case 'word_delete_paragraph': return `Deleting paragraph #${args.paragraph_index}...`;
-        default: return `Executing ${tool}...`;
-      }
-    }
-
     try {
+      checkDocUrlUpdate();
       // Perceive first: the daemon analyses the document before the model sees the prompt.
       const docContext = window.wordAgent ? await window.wordAgent.captureDocumentContext() : {};
+      if (docContext && docContext.doc_url) {
+        currentDocUrl = docContext.doc_url;
+        const notice = document.getElementById('unsavedDocNotice');
+        if (notice) notice.remove();
+      }
       const response = await fetch('/api/agent/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -901,9 +954,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           ...docContext
         })
       });
-      if (docContext && docContext.doc_url && !currentDocUrl) {
-        currentDocUrl = docContext.doc_url;
-      }
 
       if (!response.ok) {
         let detail = '';
@@ -1228,7 +1278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function buildErrorCard(ev, promptText, modelId) {
     const card = document.createElement('div');
     card.className = 'agent-error-card';
-    const code = ev.code || 'other';
+    const code = ev.code || (ev.error && ev.error.includes('already running') ? 'already_running' : 'other');
 
     if (code === 'quota') {
       limitedModels.add(modelId);
@@ -1259,6 +1309,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (code === 'auth') {
       card.innerHTML = `<div class="agent-error-title">🔒 You are not signed in to Antigravity</div>
         <div class="agent-error-desc">Sign in to Antigravity on this computer, then send your request again.</div>`;
+    } else if (code === 'already_running') {
+      card.innerHTML = `<div class="agent-error-title">⚠️ Another task is already running</div>
+        <div class="agent-error-desc">${escapeHtml(ev.error || 'Please wait for it to finish or cancel it.')}</div>
+        <div class="agent-error-actions">
+          <button class="btn-cancel-running btn-retry-model">Stop running task</button>
+        </div>`;
+      const btnCancel = card.querySelector('.btn-cancel-running');
+      if (btnCancel) {
+        btnCancel.addEventListener('click', async () => {
+          btnCancel.disabled = true;
+          try {
+            await fetch('/api/agent/cancel', { method: 'POST' });
+          } catch (_) {}
+        });
+      }
     } else {
       const title = code === 'model' ? 'This model is not available' : 'Something went wrong';
       card.innerHTML = `<div class="agent-error-title">⚠️ ${escapeHtml(title)}</div>
@@ -1321,23 +1386,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'claude-opus-5-5-high', label: 'Claude Opus 5.5 (High)', family: 'claude-opus-5-5', effort: 'high' },
     { id: 'gpt-oss-120b-medium', label: 'GPT-OSS 120B (Medium)', family: 'gpt-oss-120b', effort: 'medium' }
   ];
-  const FAMILY_LABELS = {
-    'gemini-3.8-flash': 'Gemini 3.8 Flash',
-    'gemini-4-argon': 'Gemini 4 Argon',
-    'claude-sonnet-5-5': 'Claude Sonnet 5.5',
-    'claude-opus-5-5': 'Claude Opus 5.5',
-    'gpt-oss-120b': 'GPT-OSS 120B'
-  };
 
   function familyLabel(family) {
-    if (!family) return 'Other';
-    if (FAMILY_LABELS[family]) return FAMILY_LABELS[family];
-    // "claude-haiku-5-5" -> "Claude Haiku 5.5"
-    return family
-      .replace(/(\d)-(\d)/g, '$1.$2')
-      .split('-')
-      .map(w => (/^[a-z]/.test(w) ? w.charAt(0).toUpperCase() + w.slice(1) : w.toUpperCase()))
-      .join(' ');
+    return formatFamilyLabel(family, FAMILY_LABELS, availableModels);
   }
 
   function modelLabel(modelId) {
@@ -1402,9 +1453,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await fetch('/api/models');
       const data = await res.json();
+      if (data && data.families && typeof data.families === 'object') {
+        Object.assign(FAMILY_LABELS, data.families);
+      }
       const models = (data && Array.isArray(data.models) ? data.models : [])
         .filter(m => m && m.id)
-        .map(m => ({ id: m.id, label: m.label || m.id, family: m.family || m.id, effort: m.effort || null }));
+        .map(m => ({
+          id: m.id,
+          label: m.label || m.id,
+          family: m.family || m.id,
+          family_label: m.family_label || m.family_display || (data.families ? data.families[m.family] : null),
+          effort: m.effort || null
+        }));
       if (models.length > 0) {
         renderModelOptions(models);
         return;
@@ -1784,10 +1844,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     promptInput.focus();
   }
 
-  function appendStoredAssistantMessage(content) {
+  function appendStoredAssistantMessage(content, options = {}) {
     const msgDiv = createAssistantMessagePlaceholder();
     const bubble = msgDiv.querySelector('.msg-bubble');
     bubble.innerHTML = '';
+
+    const stepsContainer = document.createElement('div');
+    stepsContainer.className = 'agent-run-container';
+    bubble.appendChild(stepsContainer);
+
+    // Plans
+    const plans = options.plans || [];
+    plans.forEach(p => {
+      const steps = Array.isArray(p.steps) ? p.steps : (Array.isArray(p) ? p : []);
+      if (steps.length > 0) {
+        const card = document.createElement('div');
+        card.className = 'agent-plan-card';
+        const items = steps.map(s => {
+          const t = typeof s === 'string' ? s : (s && (s.text || s.title || s.step)) || JSON.stringify(s);
+          return `<li>${escapeHtml(t)}</li>`;
+        }).join('');
+        card.innerHTML = `<div class="agent-plan-title">📋 Plan</div><ol class="agent-plan-list">${items}</ol>`;
+        stepsContainer.appendChild(card);
+      }
+    });
+
+    // Tool chips
+    const toolCalls = options.toolCalls || [];
+    toolCalls.forEach(tc => {
+      const chip = document.createElement('div');
+      chip.className = 'agent-step-chip ' + (tc.ok === false ? 'error' : 'success');
+      let args = {};
+      try {
+        args = typeof tc.args_json === 'string' ? JSON.parse(tc.args_json) : (tc.args || {});
+      } catch (_) {}
+      const label = humanToolLabel(tc.tool, args).replace('...', '');
+      const dur = tc.duration_ms != null ? ` (done in ${tc.duration_ms}ms)` : '';
+      if (tc.ok === false) {
+        chip.innerHTML = `<span>❌</span><span>${escapeHtml(label)} failed</span>`;
+      } else {
+        chip.innerHTML = `<span>✓</span><span>${escapeHtml(label)}${escapeHtml(dur)}</span>`;
+      }
+      stepsContainer.appendChild(chip);
+    });
+
+    if (plans.length === 0 && toolCalls.length === 0) {
+      stepsContainer.remove();
+    }
+
     const textDiv = document.createElement('div');
     textDiv.className = 'agent-summary-text';
     textDiv.innerHTML = renderMarkdown(content || '');
@@ -1827,10 +1931,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     rememberChatForDoc(chatId);
     const title = data.chat && data.chat.title ? data.chat.title : 'Conversation';
     appendSystemMessage(`Continuing: ${title}`);
-    (data.messages || []).forEach(msg => {
-      if (msg.role === 'user') appendUserMessage(msg.content || '');
-      else if (msg.role === 'assistant') appendStoredAssistantMessage(msg.content || '');
+
+    if (!currentDocUrl && data.chat && data.chat.doc_url) {
+      appendSystemMessage('ℹ️ Note: The current document is unsaved. Save this file to link it with this conversation permanently.');
+    }
+
+    const msgs = data.messages || [];
+    const chatPlans = data.plans || [];
+    const chatTools = data.tool_calls || [];
+    const turns = data.turns || [];
+
+    const turnByAssistId = new Map();
+    turns.forEach(t => {
+      if (t.assistant_message && t.assistant_message.id) {
+        turnByAssistId.set(t.assistant_message.id, t);
+      }
     });
+
+    msgs.forEach(msg => {
+      if (msg.role === 'user') {
+        appendUserMessage(msg.content || '');
+      } else if (msg.role === 'assistant') {
+        const turn = turnByAssistId.get(msg.id);
+        const plans = (msg.plans && msg.plans.length > 0)
+          ? msg.plans
+          : (turn ? turn.plans : (msgs.length <= 2 ? chatPlans : []));
+        const toolCalls = (msg.tool_calls && msg.tool_calls.length > 0)
+          ? msg.tool_calls
+          : (turn ? turn.tool_calls : (msgs.length <= 2 ? chatTools : []));
+
+        appendStoredAssistantMessage(msg.content || '', { plans, toolCalls });
+      }
+    });
+
     const actions = (data.tool_calls || []).length;
     if (actions > 0) {
       appendSystemMessage(`${actions} action${actions === 1 ? ' was' : 's were'} made in Word in this conversation.`);
@@ -1839,9 +1972,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     promptInput.focus();
   }
 
+  function showUnsavedDocNotice() {
+    if (currentDocUrl || currentHost === 'Standalone') return;
+    if (document.getElementById('unsavedDocNotice')) return;
+    const notice = document.createElement('div');
+    notice.id = 'unsavedDocNotice';
+    notice.className = 'unsaved-doc-banner';
+    notice.innerHTML = `
+      <div class="unsaved-doc-content">
+        <span class="unsaved-doc-icon">💾</span>
+        <span class="unsaved-doc-text">This document is unsaved. Save your file (Ctrl+S) so your conversation history is preserved and can be resumed next time.</span>
+      </div>
+    `;
+    onboardingSection.insertBefore(notice, onboardingSection.firstChild);
+  }
+
+  function checkDocUrlUpdate() {
+    const updated = readDocUrl();
+    if (updated && !currentDocUrl) {
+      currentDocUrl = updated;
+      const notice = document.getElementById('unsavedDocNotice');
+      if (notice) notice.remove();
+    }
+    return currentDocUrl;
+  }
+
   /** On load: offer to continue the last conversation of this document. */
   async function offerResumeLastChat() {
-    if (!currentDocUrl) return; // unsaved document: no stable key to match a past chat
+    checkDocUrlUpdate();
+    if (!currentDocUrl) {
+      showUnsavedDocNotice();
+      return; // unsaved document: no stable key to match a past chat
+    }
     const lastId = storeGet(lastChatKey(currentDocUrl));
     if (!lastId) return;
     let data;

@@ -7,8 +7,11 @@ Google Gemini Subscription Auth, and Word/PowerPoint Win32 COM engines.
 
 import os
 import sys
+import json
+import re
 import argparse
 import uvicorn
+from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -170,20 +173,72 @@ async def agent_run(request: Request):
     prompt = payload.get("prompt", "")
     host = payload.get("host", "Word")
     model = payload.get("model", "gemini-3.8-flash-high")
+
+    if agent_session.is_running:
+        async def _already_running_stream():
+            err_obj = {
+                "event": "error",
+                "error": "Another agent task is already running. Please wait or cancel it.",
+                "code": "already_running",
+            }
+            yield f"data: {json.dumps(err_obj, ensure_ascii=False)}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(_already_running_stream(), media_type="text/event-stream")
+
     perceived = await perception.analyze(payload)
+
+    async def _stream_wrapper():
+        async for chunk in agent_session.run(
+            prompt=prompt, host=host, model=model,
+            document_map=perceived.map_text,
+            analysis={**perceived.summary, "cached": perceived.cached},
+            snapshot=perceived.snapshot,
+            chat_id=payload.get("chat_id"),
+            doc_url=payload.get("doc_url"),
+            doc_title=payload.get("doc_title"),
+            effort=payload.get("effort")
+        ):
+            if "Another agent task is already running" in chunk and '"code":' not in chunk:
+                try:
+                    for line in chunk.splitlines():
+                        if line.startswith("data: "):
+                            d = json.loads(line[6:])
+                            if d.get("event") == "error" and not d.get("code"):
+                                d["code"] = "already_running"
+                                chunk = f"data: {json.dumps(d, ensure_ascii=False)}\n\n"
+                except Exception:
+                    pass
+            yield chunk
+
     return StreamingResponse(
-        agent_session.run(prompt=prompt, host=host, model=model,
-                          document_map=perceived.map_text,
-                          analysis={**perceived.summary, "cached": perceived.cached},
-                          snapshot=perceived.snapshot,
-                          chat_id=payload.get("chat_id"),
-                          doc_url=payload.get("doc_url"),
-                          doc_title=payload.get("doc_title"),
-                          effort=payload.get("effort")),
+        _stream_wrapper(),
         media_type="text/event-stream"
     )
 
 _models_cache = ModelCache(ttl=600.0)
+
+
+def _format_family_name(family: Optional[str]) -> str:
+    if not family:
+        return "Other"
+    known = {
+        "gemini-3.8-flash": "Gemini 3.8 Flash",
+        "gemini-4-argon": "Gemini 4 Argon",
+        "claude-sonnet-5-5": "Claude Sonnet 5.5",
+        "claude-opus-5-5": "Claude Opus 5.5",
+        "gpt-oss-120b": "GPT-OSS 120B",
+    }
+    if family in known:
+        return known[family]
+    s = re.sub(r"(\d)-(\d)", r"\1.\2", family)
+    words = s.split("-")
+    formatted = []
+    for w in words:
+        if w.lower() in ("gpt", "oss", "ai", "llm"):
+            formatted.append(w.upper())
+        elif w:
+            formatted.append(w.capitalize())
+    return " ".join(formatted)
 
 
 def _list_models():
@@ -194,10 +249,20 @@ def _list_models():
 @app.get("/api/models")
 async def list_models_endpoint():
     try:
-        models = await asyncio.to_thread(_list_models)
-        return {"models": models}
+        raw_models = await asyncio.to_thread(_list_models)
+        models = []
+        families = {}
+        for m in raw_models:
+            d = dict(m)
+            fam = d.get("family") or d.get("id", "other")
+            display = _format_family_name(fam)
+            d["family_display"] = display
+            d["family_label"] = display
+            families[fam] = display
+            models.append(d)
+        return {"models": models, "families": families}
     except AgyModelsError as e:
-        return JSONResponse({"models": [], "error": str(e), "code": e.code}, status_code=200)
+        return JSONResponse({"models": [], "families": {}, "error": str(e), "code": e.code}, status_code=200)
 
 
 @app.get("/api/chats")
@@ -210,10 +275,34 @@ async def get_chat_endpoint(chat_id: str):
     chat = agent_session.store.get_chat(chat_id)
     if chat is None:
         return JSONResponse({"error": "Chat not found"}, status_code=404)
+    messages = agent_session.store.list_messages(chat_id)
+    tool_calls = agent_session.store.list_tool_calls(chat_id)
+    plans = agent_session.store.list_plans(chat_id) if hasattr(agent_session.store, "list_plans") else []
+    turns = agent_session.store.list_turns(chat_id) if hasattr(agent_session.store, "list_turns") else []
+
+    turn_map = {}
+    for t in turns:
+        a_msg = t.get("assistant_message")
+        if a_msg and a_msg.get("id"):
+            turn_map[a_msg["id"]] = t
+
+    enriched_messages = []
+    for msg in messages:
+        m = dict(msg)
+        if m["role"] == "assistant" and m["id"] in turn_map:
+            m["plans"] = turn_map[m["id"]]["plans"]
+            m["tool_calls"] = turn_map[m["id"]]["tool_calls"]
+        elif m["role"] == "assistant":
+            m.setdefault("plans", [])
+            m.setdefault("tool_calls", [])
+        enriched_messages.append(m)
+
     return {
         "chat": chat,
-        "messages": agent_session.store.list_messages(chat_id),
-        "tool_calls": agent_session.store.list_tool_calls(chat_id),
+        "messages": enriched_messages,
+        "tool_calls": tool_calls,
+        "plans": plans,
+        "turns": turns,
     }
 
 

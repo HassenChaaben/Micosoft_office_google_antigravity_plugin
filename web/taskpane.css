@@ -543,6 +543,54 @@ html, body {
   transform: scale(1.06);
 }
 
+/* Stop Button */
+.dock-btn-stop {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: #DC2626;
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dock-btn-stop:hover {
+  background-color: #B91C1C;
+  transform: scale(1.06);
+}
+
+.dock-btn-stop:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Unsaved Document Banner */
+.unsaved-doc-banner {
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
+  background-color: #FEF3C7;
+  border: 1px solid #FCD34D;
+  border-radius: var(--radius-md);
+  font-size: 11.5px;
+  color: #92400E;
+  line-height: 1.4;
+}
+
+.unsaved-doc-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.unsaved-doc-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
 /* --------------------------------------------------------------------------
    Slash Command Autocomplete Popover (/ for Skills & Notion)
    -------------------------------------------------------------------------- */

@@ -13,7 +13,7 @@ function loadUtils() {
   return sandbox.window.taskpaneUtils;
 }
 
-const { escapeHtml, renderMarkdown, relativeTime } = loadUtils();
+const { escapeHtml, renderMarkdown, relativeTime, humanToolLabel, formatFamilyLabel, FAMILY_LABELS } = loadUtils();
 
 test('escapeHtml escapes tags, ampersands and quotes', () => {
   assert.equal(escapeHtml(`<b a="1">'&'</b>`), '&lt;b a=&quot;1&quot;&gt;&#39;&amp;&#39;&lt;/b&gt;');
@@ -65,4 +65,50 @@ test('relativeTime gives friendly labels', () => {
   assert.equal(relativeTime('2026-10-26T09:00:00Z', now), '3 days ago');
   assert.equal(relativeTime(Date.parse('2026-10-29T11:00:00Z') / 1000, now), '1 h ago');
   assert.equal(relativeTime('', now), '');
+});
+
+test('humanToolLabel formats tools for user display', () => {
+  assert.equal(
+    humanToolLabel('word_insert_ooxml', { location: 'after:p1' }),
+    'Writing content into Word in one native operation (after:p1)...'
+  );
+  assert.equal(
+    humanToolLabel('word_insert_ooxml', {}),
+    'Writing content into Word in one native operation (cursor)...'
+  );
+  assert.equal(
+    humanToolLabel('__capture_document', {}),
+    'Verifying the document (re-reading and checking quality)...'
+  );
+  assert.equal(
+    humanToolLabel('word_format_text', { paragraph_index: 3 }),
+    'Applying text formatting to paragraph #3...'
+  );
+  assert.equal(
+    humanToolLabel('unknown_custom_tool', {}),
+    'Executing unknown_custom_tool...'
+  );
+});
+
+test('formatFamilyLabel formats model families with display names', () => {
+  assert.equal(formatFamilyLabel('gemini-3.8-flash'), 'Gemini 3.8 Flash');
+  assert.equal(formatFamilyLabel('claude-sonnet-5-5'), 'Claude Sonnet 5.5');
+  assert.equal(formatFamilyLabel('gpt-oss-120b'), 'GPT-OSS 120B');
+  assert.equal(formatFamilyLabel(''), 'Other');
+  assert.equal(formatFamilyLabel(null), 'Other');
+
+  // Custom labels dict override
+  assert.equal(
+    formatFamilyLabel('custom-fam', { 'custom-fam': 'Custom Family 2.0' }),
+    'Custom Family 2.0'
+  );
+
+  // Model-level family_label
+  const models = [
+    { id: 'custom-m1', family: 'custom-fam-2', family_label: 'Custom Display Name' }
+  ];
+  assert.equal(formatFamilyLabel('custom-fam-2', null, models), 'Custom Display Name');
+
+  // Fallback formatting
+  assert.equal(formatFamilyLabel('mistral-large-2'), 'Mistral Large 2');
 });

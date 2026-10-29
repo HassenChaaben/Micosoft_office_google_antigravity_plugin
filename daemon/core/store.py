@@ -297,6 +297,115 @@ class Store:
                                " VALUES (?,?,?,?,?)", (pid, chat_id, message_id, steps_json, now))
         return {"id": pid, "chat_id": chat_id, "message_id": message_id, "steps_json": steps_json, "created_at": now}
 
+    def list_plans(self, chat_id: str) -> List[Dict[str, Any]]:
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT id, chat_id, message_id, steps_json, created_at FROM plans WHERE chat_id=? ORDER BY created_at",
+                (chat_id,)).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            try:
+                d["steps"] = json.loads(d["steps_json"]) if d["steps_json"] else []
+            except (json.JSONDecodeError, TypeError):
+                d["steps"] = []
+            out.append(d)
+        return out
+
+    def list_turns(self, chat_id: str) -> List[Dict[str, Any]]:
+        """Return the conversation broken down into turns with their messages, plans, and tool calls."""
+        messages = self.list_messages(chat_id)
+        plans = self.list_plans(chat_id)
+        tool_calls = self.list_tool_calls(chat_id)
+
+        turns: List[Dict[str, Any]] = []
+        current_turn: Optional[Dict[str, Any]] = None
+
+        for msg in messages:
+            if msg["role"] == "user":
+                if current_turn:
+                    turns.append(current_turn)
+                current_turn = {
+                    "turn_index": len(turns) + 1,
+                    "user_message": msg,
+                    "assistant_message": None,
+                    "plans": [],
+                    "tool_calls": [],
+                }
+            elif msg["role"] == "assistant":
+                if current_turn is None:
+                    current_turn = {
+                        "turn_index": len(turns) + 1,
+                        "user_message": None,
+                        "assistant_message": msg,
+                        "plans": [],
+                        "tool_calls": [],
+                    }
+                else:
+                    current_turn["assistant_message"] = msg
+            else:
+                if current_turn is None:
+                    current_turn = {
+                        "turn_index": len(turns) + 1,
+                        "user_message": None,
+                        "assistant_message": None,
+                        "plans": [],
+                        "tool_calls": [],
+                    }
+        if current_turn:
+            turns.append(current_turn)
+
+        assigned_plans = set()
+        assigned_tools = set()
+
+        for t in turns:
+            u_id = t["user_message"]["id"] if t["user_message"] else None
+            a_id = t["assistant_message"]["id"] if t["assistant_message"] else None
+            for p in plans:
+                if p["id"] in assigned_plans:
+                    continue
+                if p.get("message_id") and p["message_id"] in (u_id, a_id):
+                    t["plans"].append(p)
+                    assigned_plans.add(p["id"])
+            for tc in tool_calls:
+                if tc["id"] in assigned_tools:
+                    continue
+                if tc.get("message_id") and tc["message_id"] in (u_id, a_id):
+                    t["tool_calls"].append(tc)
+                    assigned_tools.add(tc["id"])
+
+        for i, t in enumerate(turns):
+            start_time = (t["user_message"] or t["assistant_message"] or {}).get("created_at", "")
+            next_start = ""
+            if i + 1 < len(turns):
+                next_start = (turns[i + 1]["user_message"] or turns[i + 1]["assistant_message"] or {}).get("created_at", "")
+
+            for p in plans:
+                if p["id"] in assigned_plans:
+                    continue
+                created = p.get("created_at", "")
+                if (not start_time or created >= start_time) and (not next_start or created < next_start):
+                    t["plans"].append(p)
+                    assigned_plans.add(p["id"])
+
+            for tc in tool_calls:
+                if tc["id"] in assigned_tools:
+                    continue
+                created = tc.get("created_at", "")
+                if (not start_time or created >= start_time) and (not next_start or created < next_start):
+                    t["tool_calls"].append(tc)
+                    assigned_tools.add(tc["id"])
+
+        if turns:
+            for p in plans:
+                if p["id"] not in assigned_plans:
+                    turns[-1]["plans"].append(p)
+            for tc in tool_calls:
+                if tc["id"] not in assigned_tools:
+                    turns[-1]["tool_calls"].append(tc)
+
+        return turns
+
     # ------------------------------------------------------------ snapshots
 
     def save_snapshot(self, doc_url: str, change_key: Optional[str], snapshot: Any, map_text: str = "") -> None:
