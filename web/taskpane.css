@@ -1245,3 +1245,155 @@ html, body {
 .hidden {
   display: none !important;
 }
+
+/* --------------------------------------------------------------------------
+   Agent cards: analysis / skills / plan / errors (added for the agent UI)
+   -------------------------------------------------------------------------- */
+.agent-info-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+}
+.agent-info-icon { flex-shrink: 0; }
+.agent-analysis-card { background-color: #F5F3FF; border-color: #DDD6FE; color: #4C1D95; }
+.agent-skills-chip { background-color: #FFF7ED; border-color: #FED7AA; color: #9A3412; }
+
+.agent-plan-card {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+.agent-plan-title { font-weight: 600; margin-bottom: 4px; }
+.agent-plan-list { margin: 0; padding-left: 20px; }
+.agent-plan-list li { margin: 2px 0; }
+
+.agent-error-card {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #7F1D1D;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.agent-error-card.agent-error-soft { background-color: #F8FAFC; border-color: #E2E8F0; color: #475569; }
+.agent-error-title { font-weight: 600; margin-bottom: 3px; }
+.agent-error-desc { color: inherit; opacity: 0.9; word-break: break-word; }
+.agent-error-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.btn-retry-model {
+  border: 1px solid #D6D3D1;
+  background-color: #FFFFFF;
+  color: var(--text-primary);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.btn-retry-model:hover:not(:disabled) { border-color: var(--accent-blue); color: var(--accent-blue); }
+.btn-retry-model:disabled { opacity: 0.5; cursor: default; }
+
+/* Safe markdown output */
+.md-h { font-weight: 700; color: #0F2C59; }
+.md-h1 { font-size: 15px; margin: 12px 0 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px; }
+.md-h2 { font-size: 14px; margin: 10px 0 5px; }
+.md-h3 { font-size: 13px; font-weight: 600; margin: 8px 0 4px; color: #1E3A8A; }
+.md-p { margin: 2px 0; word-break: break-word; }
+.md-gap { height: 6px; }
+.md-list { margin: 4px 0; padding-left: 20px; }
+.md-list li { margin-bottom: 3px; }
+.md-quote { border-left: 3px solid var(--accent-blue); margin: 6px 0; padding: 6px 10px; background: #F1F5F9; color: #334155; border-radius: 0 4px 4px 0; }
+.md-hr { border: none; border-top: 1px solid #E2E8F0; margin: 10px 0; }
+.agent-summary-text a, .agent-thinking-content a { color: var(--accent-blue); text-decoration: underline; }
+.agent-summary-text pre { background: #F1F5F9; padding: 8px; border-radius: 6px; overflow-x: auto; font-size: 11px; }
+
+/* Resume last conversation (onboarding) */
+.resume-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-card);
+  font-size: 12px;
+  text-align: left;
+}
+.resume-text { min-width: 0; }
+.resume-sub { color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resume-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-resume {
+  border: 1px solid #D6D3D1;
+  background: #FFFFFF;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.btn-resume.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #FFFFFF; }
+
+/* History drawer */
+.history-section-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 10px 4px 4px;
+}
+.history-section-title:first-child { margin-top: 2px; }
+.history-item:not(.empty) {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+}
+.history-item:not(.empty):hover,
+.history-item:not(.empty):focus { background-color: #F5F5F0; }
+.history-item.current { background-color: #EFF6FF; }
+.history-main { flex: 1; min-width: 0; }
+.history-title-row { display: flex; align-items: baseline; gap: 6px; }
+.history-title { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-time { flex-shrink: 0; font-size: 10.5px; color: var(--text-muted); }
+.history-preview, .history-doc { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.history-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; visibility: hidden; }
+.history-item:hover .history-actions,
+.history-item:focus-within .history-actions { visibility: visible; }
+.history-action, .history-confirm {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+.history-action:hover, .history-confirm:hover { background-color: #E7E5E4; color: var(--text-primary); }
+.history-confirm.yes { color: #B91C1C; font-weight: 600; }
+.history-confirm-text { font-size: 11px; color: #B91C1C; margin-right: 2px; }
+.history-rename-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  padding: 2px 6px;
+  border: 1px solid var(--accent-blue);
+  border-radius: 4px;
+  outline: none;
+}
+#historyList { flex: 1; min-height: 0; }

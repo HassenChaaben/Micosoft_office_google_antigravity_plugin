@@ -121,10 +121,9 @@
 
             <!-- Model Selector Dropdown -->
             <div class="model-selector-wrapper">
-              <select id="modelSelect" class="model-select">
-                <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash High</option>
-                <option value="gemini-pro">Gemini Pro</option>
-                <option value="gemini-deep-think">Deep Think</option>
+              <!-- Options are loaded from /api/models by taskpane.js (grouped by family). -->
+              <select id="modelSelect" class="model-select" title="Choose the AI model">
+                <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash (High)</option>
               </select>
               <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="6 9 12 15 18 9"></polyline>
@@ -192,11 +191,11 @@
         </div>
         <span class="submenu-arrow">&rsaquo;</span>
         <div class="flyout-submenu" id="submenuConnectors">
-          <div class="sub-item" data-conn="notion"><span class="dot green"></span> Notion Workspace</div>
-          <div class="sub-item" data-conn="github"><span class="dot green"></span> GitHub Repos</div>
-          <div class="sub-item" data-conn="gdrive"><span class="dot green"></span> Google Drive</div>
-          <div class="sub-item" data-conn="fs"><span class="dot green"></span> Local Filesystem</div>
-          <div class="sub-item add-conn" id="btnAddConnector">+ Add MCP Connector</div>
+          <div class="sub-item" data-conn="notion"><span class="dot"></span> Notion Workspace</div>
+          <div class="sub-item" data-conn="github"><span class="dot"></span> GitHub Repos</div>
+          <div class="sub-item" data-conn="gdrive"><span class="dot"></span> Google Drive</div>
+          <div class="sub-item" data-conn="fs"><span class="dot"></span> Local Filesystem</div>
+          <div class="sub-item add-conn" id="btnAddConnector">+ Add MCP Connector (coming soon)</div>
         </div>
       </div>
 
@@ -245,7 +244,7 @@
     <!-- History Slide-over Drawer -->
     <div id="historyDrawer" class="drawer hidden">
       <div class="drawer-header">
-        <h3>Chat History</h3>
+        <h3>Your conversations</h3>
         <button id="closeHistory" class="icon-btn">&times;</button>
       </div>
       <div id="historyList" class="drawer-content">
