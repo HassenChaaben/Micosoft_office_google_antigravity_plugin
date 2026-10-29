@@ -84,6 +84,57 @@
     }
 
     /**
+     * Write resolved form cells in place. Replacing the text of the cell's first paragraph keeps
+     * the cell's own run/paragraph formatting (fonts, bold, size, shading stay as in the template).
+     * One batched sync; if Word rejects the batch, retry cell by cell to report the bad ones.
+     */
+    async fillCells(cells, contentControls) {
+      const L = Word.InsertLocation;
+      return await Word.run(async (context) => {
+        const tables = context.document.body.tables;
+        tables.load('items');
+        await context.sync();
+
+        const failed = [];
+        const ops = [];
+        for (const c of cells) {
+          const tbl = tables.items[c.table];
+          const label = `T${c.table}r${c.row}c${c.cell}`;
+          if (!tbl) { failed.push(`${label}: table not found`); continue; }
+          ops.push({ label, run: () => tbl.getCell(c.row, c.cell).body.paragraphs.getFirst().insertText(String(c.text), L.replace) });
+        }
+        for (const [tag, value] of Object.entries(contentControls)) {
+          ops.push({
+            label: `content control '${tag}'`,
+            run: () => {
+              const cc = context.document.body.contentControls.getByTag(tag).getFirstOrNullObject();
+              if (cc.isNullObject) throw new Error('not found');
+              cc.insertText(String(value), L.replace);
+            },
+          });
+        }
+
+        let written = 0;
+        try {
+          ops.forEach((op) => op.run());
+          await context.sync();
+          written = ops.length;
+        } catch (batchError) {
+          for (const op of ops) {
+            try {
+              op.run();
+              await context.sync();
+              written++;
+            } catch (e) {
+              failed.push(`${op.label}: ${e.message || e}`);
+            }
+          }
+        }
+        return { ok: written > 0 || ops.length === 0, written, failed };
+      });
+    }
+
+    /**
      * Insert a daemon-built OOXML package in ONE native operation.
      * location: cursor | start | end | replace_selection | after:p<N> | after:<heading text>
      *           | after:ga:<id> | replace:ga:<id>
@@ -162,6 +213,9 @@
           switch (toolName) {
             case '__capture_document':
               outcome = { ok: true, ...(await this.captureDocumentContext()) };
+              break;
+            case 'word_fill_cells':
+              outcome = await this.fillCells(args.cells || [], args.content_controls || {});
               break;
             case 'word_insert_ooxml':
               outcome = await this.insertOoxmlAt(args.ooxml, args.location || 'cursor', args.block_id);

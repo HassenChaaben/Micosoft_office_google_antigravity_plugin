@@ -92,6 +92,18 @@ DAEMON_TOOLS += [
         "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]},
     },
 ]
+DAEMON_TOOLS.append({
+    "name": "word_fill_fields",
+    "description": (
+        "Fill form/template fields IN PLACE, keeping each cell's existing formatting. Keys: field paths exactly as in "
+        "the Document Map (e.g. 'Cliente › Azienda'), grid cells as '<grid> › #<record> › <column>' "
+        "(e.g. 'Minacce › #2 › Causa'), cell coordinates 'T1r2c3', or content-control tags. Fill a whole table "
+        "(or the whole document) in ONE call. Unknown keys are reported with suggestions; nothing else is touched."
+    ),
+    "inputSchema": {"type": "object", "properties": {
+        "fields": {"type": "object", "description": "{key: value} — values are plain text."}},
+        "required": ["fields"]},
+})
 DAEMON_TOOL_NAMES = {t["name"] for t in DAEMON_TOOLS}
 
 
@@ -115,6 +127,24 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
         res = await agent_session.call_tool(
             "word_insert_ooxml", {"ooxml": ooxml, "location": args.get("location") or "cursor", "block_id": block_id})
         return {**res, "block_id": block_id, "blocks": len(blocks)} if res.get("ok") else res
+    if name == "word_fill_fields":
+        from .office.fill import resolve_fields
+
+        fields = args.get("fields") or {}
+        if not isinstance(fields, dict) or not fields:
+            return {"ok": False, "error": "Pass 'fields' as an object {key: value}."}
+        if agent_session.turn_snapshot is None:
+            return {"ok": False, "error": "No document snapshot for this turn; use T{t}r{r}c{c} keys or read the document."}
+        plan = resolve_fields(agent_session.turn_snapshot, fields)
+        if not plan["cells"] and not plan["content_controls"]:
+            return {"ok": False, "error": "No field matched.\n- " + "\n- ".join(plan["errors"])}
+        res = await agent_session.call_tool("word_fill_cells", {
+            "cells": [{k: c[k] for k in ("table", "row", "cell", "text", "placeholder") if k in c} for c in plan["cells"]],
+            "content_controls": plan["content_controls"]})
+        if not res.get("ok"):
+            return res
+        return {"ok": True, "written": res.get("written", len(plan["cells"])) , "failed": res.get("failed", []),
+                "not_found": plan["errors"]}
     if name == "agent_plan":
         steps = [str(s) for s in (args.get("steps") or []) if str(s).strip()]
         if not steps:
