@@ -172,7 +172,8 @@ async def agent_run(request: Request):
     return StreamingResponse(
         agent_session.run(prompt=prompt, host=host, model=model,
                           document_map=perceived.map_text,
-                          analysis={**perceived.summary, "cached": perceived.cached}),
+                          analysis={**perceived.summary, "cached": perceived.cached},
+                          snapshot=perceived.snapshot),
         media_type="text/event-stream"
     )
 

@@ -28,7 +28,7 @@ AGENT_SYSTEM_RULES = (
     "5. INSERTING PICTURES & VISUALS: When asked to add a picture, logo, diagram, or chart, call `word_insert_image` with the URL, keyword ('logo', 'chart', 'diagram', 'banner'), or base64 data, and an optional caption.\n"
     "6. TABLE & DOCUMENT MANAGEMENT: Use `word_read_table(table_index)` to read table cells and `word_delete_table(table_index)` to remove a table if needed.\n"
     "7. BUILT-IN STYLES: Use standard built-in style names: 'Heading 1', 'Heading 2', 'Title', 'Normal'. Localization (French Titre 1, Italian Titolo 1) is handled automatically.\n"
-    "8. CONCISE SUMMARY: When finished with all tool actions, provide a single friendly sentence summarizing the changes made in Word.\n"
+    "8. VERIFY, THEN SUMMARIZE: after your edits ALWAYS call `office_verify` (pass expect_all_fields_filled=true when the user asked to fill/complete). Fix every issue it reports and verify again. Then give a short summary of what changed and anything left '[da definire]'.\n"
     "9. NO LOCAL OS/FILE EDITS: Never call file, shell, terminal, or browser tools. Only use `word-office` MCP tools.\n"
     "10. TEMPLATES, FORMS & PM DOCUMENTS:\n"
     "   - When working with templates (Project Charter, Business Case, Risk Register, etc.), forms, or tables with fields to fill:\n"
@@ -51,7 +51,20 @@ class AgentSession:
         self.current_process: Optional[subprocess.Popen] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self.conversation_history: list = []
+        self.turn_snapshot: Optional[Dict[str, Any]] = None
         self._current_turn_tools: list = []
+
+    async def verify_document(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """office_verify: capture the document again through the taskpane and compare with the turn start."""
+        from .office.perception import Perception
+        from .office.verify import verify
+
+        captured = await self.call_tool("__capture_document", {})
+        if not captured.get("ok") or not captured.get("document_ooxml"):
+            return {"ok": False, "error": captured.get("error") or "The document could not be read for verification."}
+        result = await Perception().analyze(captured)
+        return verify(self.turn_snapshot, result.snapshot,
+                      expect_all_fields_filled=args.get("expect_all_fields_filled", True))
 
     def reset_history(self):
         """Clears multi-turn conversation memory."""
@@ -128,7 +141,8 @@ class AgentSession:
         await self.event_queue.put({"event": "cancelled"})
 
     async def run(self, prompt: str, host: str = "Word", model: str = "gemini-3.8-flash-high",
-                  document_map: str = "", analysis: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
+                  document_map: str = "", analysis: Optional[Dict[str, Any]] = None,
+                  snapshot: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
         Runs the autonomous agent session. Streams SSE lines to the client.
         """
@@ -137,6 +151,7 @@ class AgentSession:
             yield "data: [DONE]\n\n"
             return
 
+        self.turn_snapshot = snapshot
         if analysis:
             yield f"data: {json.dumps({'event': 'analysis', **analysis})}\n\n"
 

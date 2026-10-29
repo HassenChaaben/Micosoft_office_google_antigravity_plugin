@@ -107,6 +107,9 @@
           }
 
           switch (toolName) {
+            case '__capture_document':
+              outcome = { ok: true, ...(await this.captureDocumentContext()) };
+              break;
             case 'word_get_document_outline':
               outcome = await this.getDocumentOutline();
               break;

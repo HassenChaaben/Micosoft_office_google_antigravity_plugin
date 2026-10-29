@@ -13,6 +13,29 @@ from .agent_session import agent_session
 
 router = APIRouter()
 
+# Tools executed by the daemon itself (not forwarded as-is to the taskpane).
+DAEMON_TOOLS = [
+    {
+        "name": "office_verify",
+        "description": (
+            "Verify your work like an Office expert before you report back. Re-reads the whole document "
+            "and compares it with the state at the start of this turn: fields filled, fields still empty, "
+            "fields accidentally cleared, tables/rows removed, leftover placeholders, heading level skips, "
+            "stale table of contents. Call it after your edits; fix every issue it reports, then call it again."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "expect_all_fields_filled": {
+                    "type": "boolean",
+                    "description": "True (default) when the user asked to fill/complete the document.",
+                }
+            },
+        },
+    }
+]
+DAEMON_TOOL_NAMES = {t["name"] for t in DAEMON_TOOLS}
+
 
 @router.get("/mcp")
 async def mcp_get():
@@ -65,7 +88,7 @@ async def mcp_post(request: Request):
             "jsonrpc": "2.0",
             "id": msg_id,
             "result": {
-                "tools": get_tool_definitions()
+                "tools": get_tool_definitions() + DAEMON_TOOLS
             }
         })
 
@@ -74,6 +97,17 @@ async def mcp_post(request: Request):
         params = body.get("params", {})
         tool_name = params.get("name")
         arguments = params.get("arguments", {})
+
+        if tool_name in DAEMON_TOOL_NAMES:
+            tool_result = await agent_session.verify_document(arguments)
+            return JSONResponse({
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": {
+                    "content": [{"type": "text", "text": json.dumps(tool_result, ensure_ascii=False)}],
+                    "isError": not tool_result.get("ok", True) and "error" in tool_result,
+                },
+            })
 
         tool_def = get_tool(tool_name)
         if not tool_def:
