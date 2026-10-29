@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Antigravity</title>
+  <!-- Office.js CDN for Microsoft Word and PowerPoint Integration -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <link rel="stylesheet" href="taskpane.css">
+  <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+</head>
+<body class="theme-light">
+  <div id="app" class="app-container">
+    
+    <!-- Top Header Bar (100% Claude Replica) -->
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-title">Gemini</span>
+        <span id="hostBadge" class="host-badge host-standalone">Suite</span>
+      </div>
+      <div class="top-actions">
+        <button id="btnHistory" class="icon-btn" title="Conversation History" aria-label="History">
+          <!-- Clock Icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </button>
+        <button id="btnNewChat" class="icon-btn" title="New Conversation" aria-label="New Conversation">
+          <!-- Plus Icon -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <button id="btnMenu" class="icon-btn" title="Settings & Account" aria-label="Menu">
+          <!-- Vertical 3 Dots -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="5" r="1.5"></circle>
+            <circle cx="12" cy="12" r="1.5"></circle>
+            <circle cx="12" cy="19" r="1.5"></circle>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+      
+      <!-- Onboarding Hero State (100% Claude Office Replica - Screenshot 2) -->
+      <section id="onboardingSection" class="onboarding-section">
+        <h2 class="onboarding-heading">Get started with these skills:</h2>
+        
+        <div class="skills-stack">
+          <button class="skill-pill" data-skill="/check-doc">/check-doc</button>
+          <button class="skill-pill" data-skill="/copy-edit">/copy-edit</button>
+          <button class="skill-pill" data-skill="/summarize-contract">/summarize-contract</button>
+          <button class="skill-pill" data-skill="/flag-issues">/flag-issues</button>
+          <button class="skill-pill" data-skill="/industry-overview">/industry-overview</button>
+          <button class="skill-pill" data-skill="/storylining">/storylining</button>
+        </div>
+
+        <div class="onboarding-footer-link">
+          <a href="#" id="manageSkillsLink">Create and manage skills on your Gemini account</a>
+        </div>
+      </section>
+
+      <!-- Active Chat Messages Stream -->
+      <section id="chatSection" class="chat-section hidden">
+        <div id="chatMessages" class="chat-messages">
+          <!-- Messages will be appended here -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Attached Context Bar (When Document Selection or Files are attached) -->
+    <div id="contextBar" class="context-bar hidden">
+      <div class="context-chip">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <span id="contextText">Active Document Context (Synced)</span>
+        <button id="contextRemove" class="chip-close">&times;</button>
+      </div>
+    </div>
+
+    <!-- Slash Commands Autocomplete Popover (/ for Skills & Notion) -->
+    <div id="slashMenu" class="slash-menu hidden" role="listbox"></div>
+
+    <!-- Bottom Floating Input Dock -->
+    <footer class="dock-container">
+      <div class="dock-card">
+        
+        <!-- Text Input Area -->
+        <div class="dock-input-wrapper">
+          <textarea id="promptInput" rows="1" placeholder="Ask Gemini for help, or / for skills" autofocus></textarea>
+        </div>
+
+        <!-- Dock Bottom Controls Bar -->
+        <div class="dock-bottom-bar">
+          <div class="dock-left-actions">
+            
+            <!-- Plus Button (Opens Flyout) -->
+            <button id="btnFlyoutPlus" class="dock-btn-plus" title="Add items & tools" aria-label="Add">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+
+            <!-- Web Grounding Globe -->
+            <button id="btnGlobe" class="dock-btn-icon active" title="Web & Document Grounding Enabled">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </button>
+
+            <!-- Model Selector Dropdown -->
+            <div class="model-selector-wrapper">
+              <select id="modelSelect" class="model-select">
+                <option value="gemini-3.8-flash-high" selected>Gemini 3.8 Flash High</option>
+                <option value="gemini-pro">Gemini Pro</option>
+                <option value="gemini-deep-think">Deep Think</option>
+              </select>
+              <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+
+          </div>
+
+          <div class="dock-right-actions">
+            <!-- Voice Input Mic -->
+            <button id="btnMic" class="dock-btn-icon" title="Voice Dictation">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+
+            <!-- Send Button -->
+            <button id="btnSend" class="dock-btn-send" title="Send message" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+    <!-- Flyout Popup Menu (Exact Claude Office Replica - Screenshot 2) -->
+    <div id="flyoutMenu" class="flyout-menu hidden">
+      <div class="flyout-item" id="menuAddFiles">
+        <div class="item-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+          <span>Add files or photos</span>
+        </div>
+        <input type="file" id="fileUploadInput" multiple style="display:none;" accept=".pdf,.docx,.pptx,.txt,.csv,.png,.jpg,.jpeg">
+      </div>
+
+      <div class="flyout-item active" id="menuSearchWeb">
+        <div class="item-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Search the web</span>
+        </div>
+        <span class="check-mark">&#10003;</span>
+      </div>
+
+      <!-- Connectors Flyout Submenu -->
+      <div class="flyout-item has-sub" id="menuConnectors">
+        <div class="item-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <span>Connectors</span>
+        </div>
+        <span class="submenu-arrow">&rsaquo;</span>
+        <div class="flyout-submenu" id="submenuConnectors">
+          <div class="sub-item" data-conn="notion"><span class="dot green"></span> Notion Workspace</div>
+          <div class="sub-item" data-conn="github"><span class="dot green"></span> GitHub Repos</div>
+          <div class="sub-item" data-conn="gdrive"><span class="dot green"></span> Google Drive</div>
+          <div class="sub-item" data-conn="fs"><span class="dot green"></span> Local Filesystem</div>
+          <div class="sub-item add-conn" id="btnAddConnector">+ Add MCP Connector</div>
+        </div>
+      </div>
+
+      <!-- Plugins Flyout Submenu -->
+      <div class="flyout-item has-sub" id="menuPlugins">
+        <div class="item-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          </svg>
+          <span>Plugins</span>
+        </div>
+        <span class="submenu-arrow">&rsaquo;</span>
+        <div class="flyout-submenu" id="submenuPlugins">
+          <div class="sub-item" data-plugin="word-track">Word Track Changes</div>
+          <div class="sub-item" data-plugin="ppt-story">PowerPoint Storyliner</div>
+          <div class="sub-item" data-plugin="contract-audit">Contract Risk Auditor</div>
+          <div class="sub-item" data-plugin="table-math">Table Excel & Math</div>
+        </div>
+      </div>
+
+      <!-- Skills Flyout Submenu -->
+      <div class="flyout-item has-sub" id="menuSkills">
+        <div class="item-left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Skills</span>
+        </div>
+        <span class="submenu-arrow">&rsaquo;</span>
+        <div class="flyout-submenu" id="submenuSkills">
+          <div class="sub-item" data-slash="/check-doc">/check-doc</div>
+          <div class="sub-item" data-slash="/copy-edit">/copy-edit</div>
+          <div class="sub-item" data-slash="/summarize-contract">/summarize-contract</div>
+          <div class="sub-item" data-slash="/flag-issues">/flag-issues</div>
+          <div class="sub-item" data-slash="/industry-overview">/industry-overview</div>
+          <div class="sub-item" data-slash="/storylining">/storylining</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- History Slide-over Drawer -->
+    <div id="historyDrawer" class="drawer hidden">
+      <div class="drawer-header">
+        <h3>Chat History</h3>
+        <button id="closeHistory" class="icon-btn">&times;</button>
+      </div>
+      <div id="historyList" class="drawer-content">
+        <div class="history-item empty">No previous conversations</div>
+      </div>
+    </div>
+
+    <!-- Auth / Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Gemini Antigravity Account</h3>
+          <button id="closeSettings" class="icon-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="auth-status-box">
+            <div id="authStatusIndicator" class="auth-indicator active"></div>
+            <div>
+              <div id="authStatusTitle" class="auth-title">Google Gemini Subscription Active</div>
+              <div id="authStatusEmail" class="auth-sub">Connected via Antigravity Auth Bridge</div>
+            </div>
+          </div>
+          <p class="auth-note">Your Google account subscription is synced directly with the local Antigravity daemon. No API keys required.</p>
+          
+          <div class="api-key-box" style="margin: 14px 0; text-align: left;">
+            <label style="font-size: 11px; font-weight: 600; color: #57534E; display: block; margin-bottom: 4px;">
+              Gemini API Key (Optional for Live Google Cloud Streaming):
+            </label>
+            <div style="display: flex; gap: 6px;">
+              <input type="password" id="inputApiKey" placeholder="AIzaSy..." style="flex: 1; padding: 6px 8px; border: 1px solid #D6D3D1; border-radius: 6px; font-size: 12px; font-family: monospace;">
+              <button id="btnSaveApiKey" class="btn-primary" style="padding: 6px 12px; font-size: 11px; white-space: nowrap;">Save</button>
+            </div>
+            <span id="apiKeyStatus" style="font-size: 10.5px; color: #16A34A; display: block; margin-top: 3px;"></span>
+          </div>
+
+          <div class="auth-actions">
+            <button id="btnAuthSignIn" class="btn-primary">Sign in with Google</button>
+            <button id="btnSyncConfig" class="btn-secondary">Sync ~/.gemini/config</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="office-bridge.js"></script>
+  <script src="word-agent.js"></script>
+  <script src="taskpane.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Build output
+build/
+dist/
+*.spec.bak
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Secrets and per-machine certificates (generated at install time)
+certs/*.key
+certs/*.pem
+*.pfx
+session.json
+.env
+
+# Practical test archives and macOS junk
+practical_tests/**/__MACOSX/
+practical_tests/**/.DS_Store
+*.zip
+.DS_Store
+
+# Office lock files
+~$*

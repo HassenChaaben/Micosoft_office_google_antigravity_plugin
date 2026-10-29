@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="geminiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A73E8"/>
+      <stop offset="50%" stop-color="#8E24AA"/>
+      <stop offset="100%" stop-color="#00BCD4"/>
+    </linearGradient>
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#E1BEE7"/>
+      <stop offset="100%" stop-color="#80D8FF"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Shield -->
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="#0B0F19"/>
+  <rect x="18" y="18" width="220" height="220" rx="54" stroke="url(#geminiGrad)" stroke-width="4" fill="none" opacity="0.8"/>
+
+  <!-- Antigravity Ring / Orbit -->
+  <ellipse cx="128" cy="128" rx="84" ry="34" stroke="url(#geminiGrad)" stroke-width="6" transform="rotate(-25 128 128)" stroke-dasharray="14 8" opacity="0.85"/>
+
+  <!-- Center Gemini 4-Point Star Sparkle -->
+  <!-- Outer glow -->
+  <path d="M128 44 C128 92 164 128 212 128 C164 128 128 164 128 212 C128 164 92 128 44 128 C92 128 128 92 128 44 Z"
+        fill="url(#geminiGrad)" filter="url(#glow)" opacity="0.9"/>
+  
+  <!-- Inner brilliant sparkle -->
+  <path d="M128 58 C128 96 158 128 198 128 C158 128 128 160 128 198 C128 160 98 128 58 128 C98 128 128 96 128 58 Z"
+        fill="url(#sparkleGrad)"/>
+
+  <!-- Antigravity Core Glyph (A-triangle inverted levitation) -->
+  <circle cx="128" cy="128" r="14" fill="#0B0F19"/>
+  <polygon points="128,120 134,132 122,132" fill="#00E5FF"/>
+</svg>
