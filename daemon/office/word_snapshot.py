@@ -339,8 +339,9 @@ def build_snapshot(ooxml: str, extras: Optional[Dict[str, Any]] = None) -> Dict[
                 outline.append({"level": level, "text": text, "paragraph": idx})
         paragraphs.append(item)
 
-    if body is not None:
-        for child in body:
+    def visit_container(container: ET.Element):
+        nonlocal prev_table
+        for child in container:
             if child.tag == W + "p":
                 visit_paragraph(child)
             elif child.tag == W + "tbl":
@@ -353,9 +354,13 @@ def build_snapshot(ooxml: str, extras: Optional[Dict[str, Any]] = None) -> Dict[
                     if tc_text:
                         all_text.append(tc_text)
             elif child.tag == W + "sdt":
+                # block content controls (e.g. agent-made "ga:<id>" blocks) can hold paragraphs and tables
                 content = child.find(W + "sdtContent")
-                for p in (content.findall(W + "p") if content is not None else []):
-                    visit_paragraph(p)
+                if content is not None:
+                    visit_container(content)
+
+    if body is not None:
+        visit_container(body)
 
     fields = _dedupe([f for t in tables for f in t.pop("fields")])
     for t in tables:

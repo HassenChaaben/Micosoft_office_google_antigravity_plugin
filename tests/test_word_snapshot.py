@@ -152,3 +152,15 @@ def test_map_groups_record_grids_instead_of_listing_every_cell(risk):
     assert "Minacce › records #1-#6" in text
     assert "Minacce › #1 › Causa" not in text
     assert len(text) < 6000
+
+
+def test_tables_and_headings_inside_agent_content_controls_are_seen():
+    from daemon.office.ooxml_builder import build_ooxml
+    xml = build_ooxml([
+        {"type": "heading", "level": 1, "text": "Rischi"},
+        {"type": "table", "rows": [["Cod.", "Causa"], ["", ""]]},
+    ], block_id="b1")
+    s = build_snapshot(xml)
+    assert s["stats"]["tables"] == 1
+    assert s["outline"][0]["text"] == "Rischi"
+    assert any(c["tag"] == "ga:b1" for c in s["content_controls"])
