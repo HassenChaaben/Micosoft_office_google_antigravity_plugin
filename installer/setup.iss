@@ -44,7 +44,7 @@ Source: "..\dist\gemini_office_daemon\*"; DestDir: "{app}"; Flags: ignoreversion
 ; Web Taskpane Assets & HTML
 Source: "..\web\*"; DestDir: "{app}\web"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\certs\*"; DestDir: "{app}\certs"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\certs\*"; DestDir: "{app}\certs"; Excludes: "*.key"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Pre-configured One-Click Launch Documents
 Source: "..\assets\Gemini_Antigravity_Word.docx"; DestDir: "{app}"; Flags: ignoreversion
@@ -70,9 +70,9 @@ Name: "{group}\Trust Gemini Certificate (Manual Fix)"; Filename: "{app}\Trust_Ge
 Name: "{group}\Start Gemini Daemon"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--background"; IconFilename: "{app}\assets\favicon.ico"
 
 [Registry]
-; WebView2 Silent Localhost SSL Bypass (Guarantees zero security warnings on any laptop)
-Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"; ValueData: "--ignore-certificate-errors --allow-insecure-localhost"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"; ValueData: "--ignore-certificate-errors --allow-insecure-localhost"; Flags: preservestringtype
+; Cleanup legacy WebView2 SSL bypass environment variables if they existed on previous installs
+Root: HKCU; Subkey: "Environment"; ValueName: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"; Flags: uninsdeletevalue dontcreatekey noerror
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueName: "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"; Flags: uninsdeletevalue dontcreatekey noerror
 
 ; Office WEF Developer Sideload Registration (Word & PowerPoint)
 Root: HKCU; Subkey: "Software\Microsoft\Office\16.0\WEF\Developer"; ValueType: string; ValueName: "{#MyAppGuid}"; ValueData: "{app}\manifest.xml"; Flags: uninsdeletevalue
@@ -88,11 +88,11 @@ Root: HKCU; Subkey: "Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\{{{#MyAp
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "GeminiAntigravityOffice"; ValueData: """{app}\{#MyAppExeName}"" --background"; Flags: uninsdeletevalue
 
 [Run]
-; Install CA Certificate into Windows LocalMachine Root store (Silent, 0 prompts because setup is admin)
-Filename: "certutil.exe"; Parameters: "-addstore -f Root ""{app}\certs\ca.crt"""; Flags: runhidden
-Filename: "certutil.exe"; Parameters: "-addstore -f Root ""{app}\certs\localhost.crt"""; Flags: runhidden
-Filename: "certutil.exe"; Parameters: "-user -addstore -f Root ""{app}\certs\ca.crt"""; Flags: runhidden
-Filename: "certutil.exe"; Parameters: "-user -addstore -f TrustedPeople ""{app}\certs\localhost.crt"""; Flags: runhidden
+; Clean up legacy insecure WebView2 SSL bypass if previously set on system
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""[System.Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', $null, 'User'); [System.Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', $null, 'Machine')"""; Flags: runhidden
+
+; Generate per-machine Root CA and localhost certificate and install into Windows stores
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--setup-cert"; Flags: runhidden
 
 ; Run certificate trust and WEF registration silently via PowerShell
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\wef_register.ps1"" -InstallDir ""{app}"""; Flags: runhidden
@@ -101,5 +101,6 @@ Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Fil
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--background"; Flags: nowait postinstall skipifsilent; Description: "Start Gemini Antigravity Office Daemon"
 
 [UninstallRun]
-; Silent cleanup of registry keys, processes, and certificates
+; Silent cleanup of legacy environment variables, registry keys, processes, and certificates
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""[System.Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', $null, 'User'); [System.Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', $null, 'Machine')"""; Flags: runhidden
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\wef_unregister.ps1"" -InstallDir ""{app}"""; Flags: runhidden
