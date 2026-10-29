@@ -83,6 +83,59 @@
       return ctx;
     }
 
+    /**
+     * Insert a daemon-built OOXML package in ONE native operation.
+     * location: cursor | start | end | replace_selection | after:p<N> | after:<heading text>
+     *           | after:ga:<id> | replace:ga:<id>
+     */
+    async insertOoxmlAt(ooxml, location, blockId) {
+      if (!ooxml) return { ok: false, error: "Missing 'ooxml'." };
+      const L = Word.InsertLocation;
+      return await Word.run(async (context) => {
+        const body = context.document.body;
+        let target = null;
+        let where = null;
+        const loc = String(location || 'cursor').trim();
+        const m = loc.match(/^(after|replace):(.*)$/i);
+
+        if (loc === 'start' || loc === 'end') {
+          target = body; where = loc === 'start' ? L.start : L.end;
+        } else if (loc === 'cursor' || loc === 'replace_selection') {
+          const sel = context.document.getSelection();
+          sel.load('text');
+          await context.sync();
+          target = sel;
+          where = loc === 'replace_selection' || !(sel.text || '').trim() ? L.replace : L.after;
+        } else if (m && m[2].startsWith('ga:')) {
+          const cc = body.contentControls.getByTag(m[2]).getFirstOrNullObject();
+          await context.sync();
+          if (cc.isNullObject) return { ok: false, error: `Anchor ${m[2]} not found (it may have been deleted).` };
+          target = cc.getRange('Whole');
+          where = m[1].toLowerCase() === 'replace' ? L.replace : L.after;
+        } else if (m && m[1].toLowerCase() === 'after') {
+          body.paragraphs.load('items/text');
+          await context.sync();
+          const items = body.paragraphs.items;
+          const ref = m[2].trim();
+          let para = null;
+          const pm = ref.match(/^p(\d+)$/i);
+          if (pm) para = items[parseInt(pm[1], 10)] || null;
+          else {
+            const needle = ref.toLowerCase();
+            para = items.find((p) => (p.text || '').trim().toLowerCase().startsWith(needle)) || null;
+          }
+          if (!para) return { ok: false, error: `Anchor '${ref}' not found in the document.` };
+          target = para.getRange(); where = L.after;
+        } else {
+          return { ok: false, error: `Unsupported location '${loc}'.` };
+        }
+
+        target.insertOoxml(ooxml, where);
+        await context.sync();
+        return { ok: true, inserted_at: loc, anchor: blockId ? `ga:${blockId}` : null };
+      });
+    }
+
     async executeTool(toolName, args, callId) {
       console.log(`[WordAgent] Executing tool: ${toolName}`, args);
       const startTime = Date.now();
@@ -109,6 +162,9 @@
           switch (toolName) {
             case '__capture_document':
               outcome = { ok: true, ...(await this.captureDocumentContext()) };
+              break;
+            case 'word_insert_ooxml':
+              outcome = await this.insertOoxmlAt(args.ooxml, args.location || 'cursor', args.block_id);
               break;
             case 'word_get_document_outline':
               outcome = await this.getDocumentOutline();

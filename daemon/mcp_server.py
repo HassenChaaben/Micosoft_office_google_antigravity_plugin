@@ -34,7 +34,56 @@ DAEMON_TOOLS = [
         },
     }
 ]
+BLOCKS_DOC = (
+    "List of blocks. Types: heading{level 1-6,text} | title{text} | subtitle{text} | "
+    "paragraph{text | runs[{text,bold,italic,underline,color '#RRGGBB',size,highlight,font}], align left|center|right|justify, style} | "
+    "bullets{items} | numbered{items} (item = string or {text, children:[items]}, max 3 levels) | "
+    "table{columns[{width_pct}], header_rows=1, repeat_header=true, style, borders, header_shading, "
+    "rows[[cell]]} where cell = string or {text|runs, colspan, rowspan, shading, bold, align, valign}; do NOT write the cells "
+    "covered by a rowspan/colspan | page_break | caption{label,text} | quote{text} | toc{levels:'1-3'}."
+)
+DAEMON_TOOLS.append({
+    "name": "word_insert_content",
+    "description": (
+        "FASTEST and preferred way to write any multi-part content (report sections, headings + text, lists, "
+        "tables with merged cells and shading, captions, TOC). Everything is inserted in ONE atomic native Word "
+        "operation with built-in styles (Heading 1-6, Title, Subtitle, Caption...), which work in any Word language. "
+        "Returns block_id; the content is wrapped in content control 'ga:<block_id>' so you can target it later "
+        "(location 'after:ga:<id>' or 'replace:ga:<id>')."
+    ),
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "blocks": {"type": "array", "items": {"type": "object"}, "description": BLOCKS_DOC},
+            "location": {
+                "type": "string",
+                "description": "cursor (default) | start | end | replace_selection | after:p<index> | after:<heading text> "
+                               "| after:ga:<block_id> | replace:ga:<block_id>",
+            },
+        },
+        "required": ["blocks"],
+    },
+})
 DAEMON_TOOL_NAMES = {t["name"] for t in DAEMON_TOOLS}
+
+
+async def run_daemon_tool(name: str, args: dict) -> dict:
+    if name == "office_verify":
+        return await agent_session.verify_document(args)
+    if name == "word_insert_content":
+        import uuid
+        from .office.ooxml_builder import build_ooxml, validate_blocks
+
+        blocks = args.get("blocks") or []
+        errors = validate_blocks(blocks)
+        if errors:
+            return {"ok": False, "error": "Invalid blocks, fix and retry:\n- " + "\n- ".join(errors)}
+        block_id = args.get("block_id") or uuid.uuid4().hex[:8]
+        ooxml = build_ooxml(blocks, block_id=block_id)
+        res = await agent_session.call_tool(
+            "word_insert_ooxml", {"ooxml": ooxml, "location": args.get("location") or "cursor", "block_id": block_id})
+        return {**res, "block_id": block_id, "blocks": len(blocks)} if res.get("ok") else res
+    return {"ok": False, "error": f"Unknown daemon tool {name}"}
 
 
 @router.get("/mcp")
@@ -99,13 +148,13 @@ async def mcp_post(request: Request):
         arguments = params.get("arguments", {})
 
         if tool_name in DAEMON_TOOL_NAMES:
-            tool_result = await agent_session.verify_document(arguments)
+            tool_result = await run_daemon_tool(tool_name, arguments)
             return JSONResponse({
                 "jsonrpc": "2.0",
                 "id": msg_id,
                 "result": {
                     "content": [{"type": "text", "text": json.dumps(tool_result, ensure_ascii=False)}],
-                    "isError": not tool_result.get("ok", True) and "error" in tool_result,
+                    "isError": tool_result.get("ok") is False and "error" in tool_result,
                 },
             })
 

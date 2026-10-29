@@ -669,6 +669,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function humanToolLabel(tool, args) {
       switch (tool) {
+        case 'word_insert_ooxml': return `Writing content into Word in one native operation (${args.location || 'cursor'})...`;
         case '__capture_document': return 'Verifying the document (re-reading and checking quality)...';
         case 'word_get_document_outline': return 'Reading Word document structure & paragraphs...';
         case 'word_read_paragraphs': return `Reading paragraphs (${args.start_index}..${args.end_index || args.start_index})...`;
