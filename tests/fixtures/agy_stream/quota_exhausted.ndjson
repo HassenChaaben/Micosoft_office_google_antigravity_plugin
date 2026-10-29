@@ -1,0 +1,2 @@
+{"event": "init", "conversation_id": "00000000-0000-0000-0000-000000000429", "init": {"model": "gemini-4-argon-medium", "cwd": "C:\u0007gy_workspace", "tools": []}}
+{"event": "result", "result": {"conversation_id": "00000000-0000-0000-0000-000000000429", "status": "ERROR", "response": "", "error": "Individual quota reached. Please upgrade your subscription to increase your limits. Resets in 96h24m30s.", "duration_seconds": 0, "num_turns": 0}}
