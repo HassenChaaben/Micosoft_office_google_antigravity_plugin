@@ -5,7 +5,7 @@
 <h1 align="center">Gemini Antigravity Microsoft Office Plugin</h1>
 
 <p align="center">
-  <b>Autonomous, Publication-Grade AI Copilot for Microsoft Word, PowerPoint, and Excel</b><br>
+  <b>Autonomous, Publication-Grade AI Copilot for Microsoft Office</b><br>
   <i>Powered by Google Gemini and the Antigravity Agentic Cognitive Runtime</i>
 </p>
 
@@ -19,6 +19,9 @@
 
 > 🔗 **Repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git)  
 > 📦 **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
+
+> [!NOTE]
+> **Current Scope & Community Contributions**: Gemini Antigravity currently focuses on and is production-tested for **Microsoft Office (Word)** on Windows. We are actively waiting for and warmly welcoming **community contributions** to expand native automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform support for **macOS**! Check out the [Zero-Fluff Matrix](#-exact-capabilities--what-is-missing-zero-fluff-matrix) and open a PR.
 
 ---
 
@@ -74,7 +77,6 @@ Gemini Antigravity is an autonomous Office agent that operates directly on docum
 - **Office WEF Sideloading (`wef_register.ps1`)**: Automatically registers the manifest across Word, PowerPoint, and Excel across all Windows UI locales (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`).
 - **Windows Startup**: Automatically launches silently on Windows user logon via `HKCU\...\Run`.
 
-![Local Daemon Terminal](docs/images/daemon_terminal.png)
 
 ---
 

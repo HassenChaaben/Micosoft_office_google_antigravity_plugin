@@ -1,6 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Minimalist Sleek Black Gemini 4-Pointed Sparkle Star on Transparent Background -->
-  <path d="M128 16 C128 84 172 128 240 128 C172 128 128 172 128 240 C128 170 84 128 16 128 C84 128 128 84 128 16 Z"
-        fill="#000000"/>
+  <defs>
+    <!-- Background Gradient: Deep Obsidian Luxury -->
+    <linearGradient id="bgGradient" x1="24" y1="16" x2="232" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1B1C20"/>
+      <stop offset="45%" stop-color="#101114"/>
+      <stop offset="100%" stop-color="#07080A"/>
+    </linearGradient>
+
+    <!-- Outer Precision Stroke Gradient -->
+    <linearGradient id="borderGrad" x1="24" y1="24" x2="232" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#525866" stop-opacity="0.7"/>
+      <stop offset="50%" stop-color="#2B303B" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#14171F" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Ambient Core Halo -->
+    <radialGradient id="coreGlow" cx="128" cy="128" r="92" fx="128" fy="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.14"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Facet Highlight (Top-Right / North-East) -->
+    <linearGradient id="facetLight" x1="128" y1="44" x2="212" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#CBD5E1"/>
+    </linearGradient>
+
+    <!-- Facet Midtone (Bottom-Left / South-West) -->
+    <linearGradient id="facetMid" x1="44" y1="128" x2="128" y2="212" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E2E8F0"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+
+    <!-- Facet Shadow (Bottom-Right / South-East) -->
+    <linearGradient id="facetDark" x1="128" y1="128" x2="212" y2="212" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#94A3B8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Subtle Inset Drop Shadow for Squircle -->
+    <filter id="shadow" x="0" y="4" width="256" height="256" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Badge Container -->
+  <rect x="14" y="14" width="228" height="228" rx="54" fill="url(#bgGradient)" stroke="url(#borderGrad)" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Subtle Core Light Aura -->
+  <circle cx="128" cy="128" r="82" fill="url(#coreGlow)"/>
+
+  <!-- Inner Antigravity Gravitational Rings (Subtle Blueprint Tech Coordinates) -->
+  <circle cx="128" cy="128" r="92" stroke="#334155" stroke-width="0.75" stroke-dasharray="3 4" stroke-opacity="0.45"/>
+  <circle cx="128" cy="128" r="70" stroke="#475569" stroke-width="0.5" stroke-opacity="0.3"/>
+
+  <!-- High-Precision Faceted Gemini Star -->
+  <!-- Top-Right Blade (Brilliant Highlight) -->
+  <path d="M128 44 C128 88 168 128 212 128 L128 128 Z" fill="url(#facetLight)"/>
+  <!-- Top-Left Blade (Clean Silver Solid) -->
+  <path d="M128 44 C128 88 88 128 44 128 L128 128 Z" fill="#F8FAFC" fill-opacity="0.95"/>
+  <!-- Bottom-Left Blade (Reflective Midtone) -->
+  <path d="M44 128 C88 128 128 168 128 212 L128 128 Z" fill="url(#facetMid)"/>
+  <!-- Bottom-Right Blade (Chiseled Depth Shadow) -->
+  <path d="M128 212 C128 168 168 128 212 128 L128 128 Z" fill="url(#facetDark)"/>
+
+  <!-- Central Precision Core Axis Lines -->
+  <line x1="128" y1="44" x2="128" y2="212" stroke="#0F172A" stroke-width="0.75" stroke-opacity="0.4"/>
+  <line x1="44" y1="128" x2="212" y2="128" stroke="#0F172A" stroke-width="0.75" stroke-opacity="0.4"/>
+
+  <!-- Brilliant Center Starburst Nexus -->
+  <circle cx="128" cy="128" r="3.5" fill="#FFFFFF"/>
+  <circle cx="128" cy="128" r="7.5" stroke="#FFFFFF" stroke-width="0.75" stroke-opacity="0.6"/>
+
+  <!-- Satellite AI Sparks (Antigravity Sparkles) -->
+  <path d="M188 64 C188 71 193 76 200 76 C193 76 188 81 188 88 C188 81 183 76 176 76 C183 76 188 71 188 64 Z" fill="#E2E8F0" fill-opacity="0.85"/>
+  <path d="M68 174 C68 178 71 181 75 181 C71 181 68 184 68 188 C68 184 65 181 61 181 C65 181 68 178 68 174 Z" fill="#94A3B8" fill-opacity="0.7"/>
 </svg>
