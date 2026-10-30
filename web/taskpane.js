@@ -1810,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     msgDiv.className = 'chat-message assistant';
     msgDiv.innerHTML = `
       <div class="msg-header">
-        <img src="/assets/icon-16.png" width="14" height="14" alt="Gemini">
+        <img src="/assets/icon-32.png" width="15" height="15" alt="Gemini" style="vertical-align: middle;">
         <span>Gemini Antigravity</span>
       </div>
       <div class="msg-bubble">Thinking...</div>
