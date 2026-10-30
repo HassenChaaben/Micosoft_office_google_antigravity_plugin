@@ -178,6 +178,8 @@
       case 'word_set_table_cell': return `Updating table cell [${args.row_index}, ${args.col_index}]: "${args.text}"`;
       case 'word_add_table_row': return `Adding row to table #${args.table_index}...`;
       case 'word_delete_table': return `Deleting table #${args.table_index}...`;
+      case 'word_delete_column': return `Deleting column #${args.col_index !== undefined ? args.col_index : (args.column_index !== undefined ? args.column_index : '')} from table #${args.table_index}...`;
+      case 'word_delete_row': return `Deleting row #${args.row_index} from table #${args.table_index}...`;
       case 'word_read_table': return `Reading content of table #${args.table_index}...`;
       case 'word_clear_document': return 'Clearing document body...';
       case 'word_format_text': return `Applying text formatting to paragraph #${args.paragraph_index}...`;

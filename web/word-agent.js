@@ -236,7 +236,7 @@
               outcome = await this.insertList(args.items, args.list_type, args.location);
               break;
             case 'word_insert_table':
-              outcome = await this.insertTable(args.headers, args.rows, args.table_style, args.location);
+              outcome = await this.insertTable(args.headers, args.rows, args.table_style, args.location, args.columns);
               break;
             case 'word_insert_image':
               outcome = await this.insertImage(args.source, args.caption, args.location, args.width_px, args.height_px);
@@ -252,6 +252,12 @@
               break;
             case 'word_delete_table':
               outcome = await this.deleteTable(args.table_index);
+              break;
+            case 'word_delete_column':
+              outcome = await this.deleteColumn(args.table_index, args.col_index !== undefined ? args.col_index : args.column_index);
+              break;
+            case 'word_delete_row':
+              outcome = await this.deleteRow(args.table_index, args.row_index);
               break;
             case 'word_read_table':
               outcome = await this.readTable(args.table_index);
@@ -617,27 +623,41 @@
       });
     }
 
-    async insertTable(headers, rows, tableStyle = 'Grid Table 4 - Accent 1', location = 'end') {
-      if (!headers || !Array.isArray(headers) || headers.length === 0) {
-        return {
-          ok: false,
-          error: "Missing required parameter 'headers'. Example: headers: ['product_name', 'quantity', 'price']"
-        };
+    async insertTable(headers, rows, tableStyle = 'Grid Table 4 - Accent 1', location = 'end', columns = null) {
+      let finalHeaders = Array.isArray(headers) && headers.length > 0 ? headers.map(String) : null;
+      if (!finalHeaders) {
+        let colCount = typeof columns === 'number' && columns > 0 ? columns : 0;
+        if (!colCount && Array.isArray(rows) && rows.length > 0 && Array.isArray(rows[0])) {
+          colCount = rows[0].length;
+        }
+        if (!colCount) {
+          throw new Error("Missing required parameter 'headers'. Example: headers: ['product_name', 'quantity', 'price']");
+        }
+        finalHeaders = Array.from({ length: colCount }, (_, i) => `Colonna ${i + 1}`);
       }
 
-      const normHeaders = headers.map(String);
-      const normRows = Array.isArray(rows) && rows.length > 0 ? rows : [
-        normHeaders.map((h, i) => `Sample ${h} 1`),
-        normHeaders.map((h, i) => `Sample ${h} 2`)
-      ];
+      let normRows;
+      if (typeof rows === 'number' && rows > 0) {
+        const dataCount = rows > 1 ? rows - 1 : rows;
+        normRows = Array.from({ length: dataCount }, (_, r) =>
+          finalHeaders.map((_, c) => `Elemento ${r + 1}`)
+        );
+      } else if (Array.isArray(rows) && rows.length > 0) {
+        normRows = rows;
+      } else {
+        normRows = [
+          finalHeaders.map((h, i) => `Dato 1`),
+          finalHeaders.map((h, i) => `Dato 2`)
+        ];
+      }
 
       return await Word.run(async (context) => {
         const body = context.document.body;
         const totalRows = normRows.length + 1;
-        const totalCols = normHeaders.length;
+        const totalCols = finalHeaders.length;
 
         // Build 2D string matrix
-        const matrix = [normHeaders];
+        const matrix = [finalHeaders];
         for (const r of normRows) {
           const rowData = [];
           for (let c = 0; c < totalCols; c++) {
@@ -690,7 +710,7 @@
           table_created: true,
           rows: totalRows,
           columns: totalCols,
-          headers: normHeaders
+          headers: finalHeaders
         };
       });
     }
@@ -745,6 +765,67 @@
         table.delete();
         await context.sync();
         return { ok: true, deleted_table_index: idx };
+      });
+    }
+
+    async deleteColumn(tableIndex = 0, colIndex = 0) {
+      return await Word.run(async (context) => {
+        const tables = context.document.body.tables;
+        tables.load('items');
+        await context.sync();
+
+        const tIdx = typeof tableIndex === 'number' ? tableIndex : parseInt(tableIndex, 10);
+        if (isNaN(tIdx) || tIdx < 0 || tIdx >= tables.items.length) {
+          return { ok: false, error: `Table index ${tableIndex} not found. Total tables: ${tables.items.length}.` };
+        }
+
+        const table = tables.items[tIdx];
+        const firstRow = table.rows.getFirst();
+        firstRow.load('cellCount');
+        await context.sync();
+
+        const cIdx = typeof colIndex === 'number' ? colIndex : parseInt(colIndex, 10);
+        if (isNaN(cIdx) || cIdx < 0 || cIdx >= firstRow.cellCount) {
+          return { ok: false, error: `Column index ${colIndex} out of bounds (table has ${firstRow.cellCount} columns).` };
+        }
+
+        if (firstRow.cellCount <= 1) {
+          return { ok: false, error: 'Cannot delete the last remaining column of a table. Use word_delete_table instead.' };
+        }
+
+        table.deleteColumns(cIdx, 1);
+        await context.sync();
+        return { ok: true, deleted_column_index: cIdx, table_index: tIdx, remaining_columns: firstRow.cellCount - 1 };
+      });
+    }
+
+    async deleteRow(tableIndex = 0, rowIndex = 0) {
+      return await Word.run(async (context) => {
+        const tables = context.document.body.tables;
+        tables.load('items');
+        await context.sync();
+
+        const tIdx = typeof tableIndex === 'number' ? tableIndex : parseInt(tableIndex, 10);
+        if (isNaN(tIdx) || tIdx < 0 || tIdx >= tables.items.length) {
+          return { ok: false, error: `Table index ${tableIndex} not found. Total tables: ${tables.items.length}.` };
+        }
+
+        const table = tables.items[tIdx];
+        table.load('rowCount');
+        await context.sync();
+
+        const rIdx = typeof rowIndex === 'number' ? rowIndex : parseInt(rowIndex, 10);
+        if (isNaN(rIdx) || rIdx < 0 || rIdx >= table.rowCount) {
+          return { ok: false, error: `Row index ${rowIndex} out of bounds (table has ${table.rowCount} rows).` };
+        }
+
+        if (table.rowCount <= 1) {
+          return { ok: false, error: 'Cannot delete the last remaining row of a table. Use word_delete_table instead.' };
+        }
+
+        table.deleteRows(rIdx, 1);
+        await context.sync();
+        return { ok: true, deleted_row_index: rIdx, table_index: tIdx, remaining_rows: table.rowCount - 1 };
       });
     }
 

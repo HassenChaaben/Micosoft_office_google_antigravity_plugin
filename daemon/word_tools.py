@@ -111,7 +111,7 @@ WORD_TOOLS: List[Dict[str, Any]] = [
     },
     {
         "name": "word_insert_table",
-        "description": "Inserts a native Microsoft Word table populated with the given 2D rows and applies executive styling and auto-fit. Use this for tables rather than raw text.",
+        "description": "Inserts a native Microsoft Word table populated with the given columns/headers and rows, applying executive styling and auto-fit. Use this for tables rather than raw text.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -120,13 +120,12 @@ WORD_TOOLS: List[Dict[str, Any]] = [
                     "items": {"type": "string"},
                     "description": "List of header column names (e.g. ['product_name', 'quantity', 'price'])."
                 },
+                "columns": {
+                    "type": "integer",
+                    "description": "Number of columns (used if headers is not specified, generates default Colonna 1, Colonna 2...)."
+                },
                 "rows": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {"type": "string"}
-                    },
-                    "description": "2D array of row cell values."
+                    "description": "2D array of row cell values, or an integer specifying number of rows."
                 },
                 "table_style": {
                     "type": "string",
@@ -138,8 +137,7 @@ WORD_TOOLS: List[Dict[str, Any]] = [
                     "description": "Where to insert: 'end', 'cursor', 'after:<index>', 'before:<index>'. Default 'end'.",
                     "default": "end"
                 }
-            },
-            "required": ["headers", "rows"]
+            }
         },
         "destructive": False
     },
@@ -418,6 +416,44 @@ WORD_TOOLS: List[Dict[str, Any]] = [
                 }
             },
             "required": ["table_index"]
+        },
+        "destructive": True
+    },
+    {
+        "name": "word_delete_column",
+        "description": "Deletes a column from an existing native Word table by 0-based column index in-place. Never delete and recreate the whole table just to drop a column; use this tool.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "table_index": {
+                    "type": "integer",
+                    "description": "0-based table index (default 0)."
+                },
+                "col_index": {
+                    "type": "integer",
+                    "description": "0-based column index to delete (0 is the first column)."
+                }
+            },
+            "required": ["col_index"]
+        },
+        "destructive": True
+    },
+    {
+        "name": "word_delete_row",
+        "description": "Deletes a row from an existing native Word table by 0-based row index in-place.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "table_index": {
+                    "type": "integer",
+                    "description": "0-based table index (default 0)."
+                },
+                "row_index": {
+                    "type": "integer",
+                    "description": "0-based row index to delete."
+                }
+            },
+            "required": ["row_index"]
         },
         "destructive": True
     },

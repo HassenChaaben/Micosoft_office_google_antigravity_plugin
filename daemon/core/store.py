@@ -168,8 +168,10 @@ class Store:
         return chat
 
     def list_chats(self, host: Optional[str] = None, doc_url: Optional[str] = None,
-                   limit: int = 50) -> List[Dict[str, Any]]:
+                   limit: int = 50, only_with_assistant: bool = False) -> List[Dict[str, Any]]:
         where, params = [], []
+        if only_with_assistant:
+            where.append("c.id IN (SELECT DISTINCT chat_id FROM messages WHERE role='assistant')")
         if host is not None:
             where.append("c.host=?")
             params.append(host)

@@ -267,7 +267,7 @@ async def list_models_endpoint():
 
 @app.get("/api/chats")
 async def list_chats_endpoint(host: str = None, doc_url: str = None, limit: int = 50):
-    return {"chats": agent_session.store.list_chats(host=host, doc_url=doc_url, limit=limit)}
+    return {"chats": agent_session.store.list_chats(host=host, doc_url=doc_url, limit=limit, only_with_assistant=True)}
 
 
 @app.get("/api/chats/{chat_id}")

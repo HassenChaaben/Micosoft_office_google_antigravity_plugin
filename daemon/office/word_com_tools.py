@@ -1682,6 +1682,32 @@ def word_table_clone_row(doc, table: Any, row: int, count: int = 1) -> Dict[str,
             "new_rows": list(range(row + 1, row + 1 + count))}
 
 
+@_tool
+def word_delete_column(doc, table: Any, col: int) -> Dict[str, Any]:
+    tbl = _table(doc, table)
+    col = int(col)
+    n = tbl.Columns.Count
+    if not 0 <= col < n:
+        return {"ok": False, "error": f"col must be 0..{n - 1} (table has {n} columns)"}
+    if n <= 1:
+        return {"ok": False, "error": "Cannot delete the last remaining column of a table"}
+    tbl.Columns(col + 1).Delete()
+    return {"ok": True, "deleted_column_index": col, "remaining_columns": tbl.Columns.Count}
+
+
+@_tool
+def word_delete_row(doc, table: Any, row: int) -> Dict[str, Any]:
+    tbl = _table(doc, table)
+    row = int(row)
+    n = tbl.Rows.Count
+    if not 0 <= row < n:
+        return {"ok": False, "error": f"row must be 0..{n - 1} (table has {n} rows)"}
+    if n <= 1:
+        return {"ok": False, "error": "Cannot delete the last remaining row of a table"}
+    tbl.Rows(row + 1).Delete()
+    return {"ok": True, "deleted_row_index": row, "remaining_rows": tbl.Rows.Count}
+
+
 # --- registry ------------------------------------------------------------------------------------
 
 _LOC = {"type": "string", "description": "Where to insert: anchor from the Document Map ('p12', 'T0', 'i0', "
@@ -1856,6 +1882,20 @@ TOOLS: Dict[str, Dict[str, Any]] = {
         "inputSchema": _schema({"table": {"type": "string", "description": "'T0'"},
                                 "row": {"type": "integer", "minimum": 0},
                                 "count": {"type": "integer", "minimum": 1, "maximum": 200}}, ["table", "row"]),
+    },
+    "word_delete_column": {
+        "fn": word_delete_column, "destructive": True,
+        "description": "Delete a column by 0-based index from a table (e.g. 'T0'). Preserves the rest of the table.",
+        "inputSchema": _schema({"table": {"type": "string", "description": "'T0'"},
+                                "col": {"type": "integer", "minimum": 0, "description": "0-based column index"}},
+                               ["table", "col"]),
+    },
+    "word_delete_row": {
+        "fn": word_delete_row, "destructive": True,
+        "description": "Delete a row by 0-based index from a table (e.g. 'T0'). Preserves the rest of the table.",
+        "inputSchema": _schema({"table": {"type": "string", "description": "'T0'"},
+                                "row": {"type": "integer", "minimum": 0, "description": "0-based row index"}},
+                               ["table", "row"]),
     },
 }
 

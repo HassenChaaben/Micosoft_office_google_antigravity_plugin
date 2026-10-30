@@ -426,6 +426,29 @@ def test_table_clone_row_keeps_formatting_and_order(doc):
     assert all(t.Rows(i).Shading.BackgroundPatternColor == 255 for i in (2, 3, 4))
 
 
+def test_delete_column_and_row(doc):
+    t = doc.Tables.Add(wt.insertion_range(doc, "end"), 3, 3)
+    t.Cell(1, 1).Range.Text = "A1"
+    t.Cell(1, 2).Range.Text = "B1"
+    t.Cell(1, 3).Range.Text = "C1"
+    t.Cell(2, 1).Range.Text = "A2"
+    t.Cell(3, 1).Range.Text = "A3"
+
+    # Delete column 1 (0-based, "B1")
+    r_col = ok(wt.word_delete_column(doc, table="T0", col=1))
+    assert r_col["remaining_columns"] == 2
+    assert t.Columns.Count == 2
+    assert t.Cell(1, 1).Range.Text[:-2] == "A1"
+    assert t.Cell(1, 2).Range.Text[:-2] == "C1"
+
+    # Delete row 1 (0-based, "A2")
+    r_row = ok(wt.word_delete_row(doc, table="T0", row=1))
+    assert r_row["remaining_rows"] == 2
+    assert t.Rows.Count == 2
+    assert t.Cell(1, 1).Range.Text[:-2] == "A1"
+    assert t.Cell(2, 1).Range.Text[:-2] == "A3"
+
+
 # --- registry ---------------------------------------------------------------------------
 
 def test_registry_contract():
@@ -433,7 +456,7 @@ def test_registry_contract():
                 "word_insert_caption", "word_insert_cross_reference", "word_update_fields",
                 "word_insert_section_break", "word_set_header_footer", "word_track_changes", "word_add_comment",
                 "word_modify_style", "word_apply_style", "word_link_numbering_to_headings", "word_set_checkbox",
-                "word_table_clone_row"}
+                "word_table_clone_row", "word_delete_column", "word_delete_row"}
     assert set(wt.TOOLS) == expected
     for name, spec in wt.TOOLS.items():
         assert callable(spec["fn"]) and len(spec["description"]) > 40
