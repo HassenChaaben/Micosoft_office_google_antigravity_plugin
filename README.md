@@ -221,6 +221,9 @@ To maintain release stability, we follow a strict two-tier branch workflow:
 - **`dev` (Development Branch)**: The active development and staging branch where all new features, enhancements, and fixes are tested. **All contributor Pull Requests MUST target the `dev` branch**.
 - **`main` (Production Branch)**: Stable, production-ready releases. Maintainers periodically merge `dev` into `main` to publish official installer builds.
 
+> [!IMPORTANT]
+> **🔒 Branch Protection & Exclusive Owner Merging**: Direct pushes to `main` and `dev` are strictly blocked by repository protection rules. All contributors must submit their work via a Pull Request targeting `dev`. Only the repository owner and maintainer ([Hassen Ben Chaaben](https://github.com/HassenChaaben)) can review and merge Pull Requests.
+
 ### How to Contribute
 1. **Fork the repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)
 2. **Branch from `dev`**: Always create your feature branch from `dev`:
