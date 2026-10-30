@@ -20,7 +20,7 @@
 
 > **Repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)  
 > **Documentation Portal**: [https://hassenchaaben.github.io/Micosoft_office_google_antigravity_plugin/](https://hassenchaaben.github.io/Micosoft_office_google_antigravity_plugin/)  
-> **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
+> **Download Standalone Setup**: [GeminiAntigravityOffice_Setup.exe v1.0.0 (Direct Download)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe)
 
 > [!NOTE]
 > **🎨 Open-Source Hobby Scope**: This project is developed strictly as a **personal open-source hobby and technical exploration**. It is **NOT built for commercial uses** or enterprise distribution.
@@ -155,7 +155,7 @@ When the agent drafts scientific or business sections (e.g. the Quantum Computin
 No Python, Node.js, or command line required:
 
 1. **Download the Installer**:
-   Download [`GeminiAntigravityOffice_Setup.exe`](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases) from the **[Releases](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)** page.
+   Download [**GeminiAntigravityOffice_Setup.exe v1.0.0 (Direct Download)**](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe) or get it from the **[Releases](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)** page.
 2. **Run the Installer**:
    Double-click the setup wizard. It automatically:
    - Deploys the standalone daemon and web taskpane to `%LOCALAPPDATA%\GeminiAntigravityOffice`.

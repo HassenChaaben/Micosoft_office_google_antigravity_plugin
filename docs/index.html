@@ -299,29 +299,57 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      height: 42px;
+      height: 40px;
       padding: 0 20px;
-      border-radius: 10px;
+      border-radius: 9999px;
       font-size: 0.85rem;
       font-weight: 700;
+      letter-spacing: -0.01em;
       text-decoration: none;
-      white-space: nowrap;
+      white-space: nowrap !important;
       flex-shrink: 0;
-      background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      min-width: max-content;
+      background: linear-gradient(135deg, #C084FC 0%, #A855F7 50%, #7C3AED 100%);
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.45);
       box-shadow: 
-        0 0 20px rgba(168, 85, 247, 0.6),
-        0 0 40px rgba(124, 58, 237, 0.35);
+        0 0 20px rgba(168, 85, 247, 0.7),
+        0 0 40px rgba(124, 58, 237, 0.4);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .btn-nav-download::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        60deg,
+        transparent,
+        rgba(255, 255, 255, 0.25),
+        transparent
+      );
+      transform: rotate(25deg);
+      animation: navShine 3.5s infinite;
+    }
+
+    @keyframes navShine {
+      0% { transform: translateX(-100%) rotate(25deg); }
+      30%, 100% { transform: translateX(100%) rotate(25deg); }
     }
 
     .btn-nav-download:hover {
-      background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%);
+      background: linear-gradient(135deg, #E9D5FF 0%, #C084FC 50%, #9333EA 100%);
+      color: #FFFFFF !important;
       box-shadow: 
-        0 0 35px rgba(192, 132, 252, 0.9),
-        0 0 65px rgba(168, 85, 247, 0.7);
-      transform: translateY(-2px);
+        0 0 32px rgba(192, 132, 252, 1),
+        0 0 65px rgba(168, 85, 247, 0.85);
+      transform: translateY(-2px) scale(1.03);
     }
 
     /* ==========================================================================
@@ -460,27 +488,34 @@
     .btn-main-download {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
-      height: 48px;
-      padding: 0 28px;
-      border-radius: 12px;
-      font-size: 0.95rem;
+      height: 50px;
+      padding: 0 30px;
+      border-radius: 9999px;
+      font-size: 0.98rem;
       font-weight: 700;
       text-decoration: none;
+      white-space: nowrap !important;
       background: linear-gradient(135deg, #C084FC 0%, #9333EA 50%, #7C3AED 100%);
-      color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.45);
       box-shadow: 
-        0 0 25px rgba(192, 132, 252, 0.7),
-        0 0 50px rgba(168, 85, 247, 0.45);
+        0 0 25px rgba(192, 132, 252, 0.8),
+        0 0 55px rgba(168, 85, 247, 0.5);
       transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
     }
 
     .btn-main-download:hover {
+      background: linear-gradient(135deg, #E9D5FF 0%, #C084FC 50%, #9333EA 100%);
+      color: #FFFFFF !important;
       box-shadow: 
         0 0 40px rgba(192, 132, 252, 1),
-        0 0 75px rgba(168, 85, 247, 0.7);
-      transform: translateY(-2px) scale(1.02);
+        0 0 80px rgba(168, 85, 247, 0.8);
+      transform: translateY(-2px) scale(1.03);
     }
 
     .btn-main-github {
@@ -829,10 +864,18 @@
       text-shadow: 0 0 10px rgba(192, 132, 252, 0.8);
     }
 
+    @media (max-width: 1180px) {
+      .nav-links { display: none; }
+    }
+
     @media (max-width: 960px) {
       .hero h1 { font-size: 2.2rem; }
       .gallery-grid, .steps-grid, .legend-grid { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .brand-title-text { display: none; }
+      .navbar { height: 68px; }
     }
   </style>
 </head>
@@ -927,9 +970,12 @@
         <li><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" target="_blank">GitHub</a></li>
       </ul>
 
-      <!-- Compact, Horizontally Centered, No-Wrap Download Button -->
-      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn-nav-download" target="_blank">
-        ⬇️ Download Setup
+      <!-- Direct Download v1.0.0 Button -->
+      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe" 
+         class="btn-nav-download" 
+         download="GeminiAntigravityOffice_Setup.exe"
+         title="Direct Download v1.0.0 Setup Installer (.exe)">
+        ⬇️ Download v1.0.0
       </a>
     </div>
   </header>
@@ -964,8 +1010,11 @@
       </div>
 
       <div class="hero-actions">
-        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn-main-download" target="_blank">
-          ⬇️ Download Standalone Installer (.exe)
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe" 
+           class="btn-main-download" 
+           download="GeminiAntigravityOffice_Setup.exe"
+           title="Direct Download v1.0.0 Standalone Installer (.exe)">
+          ⬇️ Download v1.0.0 (.exe)
         </a>
         <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn-main-github" target="_blank">
           View on GitHub (Stars & Forks Welcome)
@@ -1155,8 +1204,8 @@
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-num">01</div>
-          <h3>Download Setup</h3>
-          <p>Get <code>GeminiAntigravityOffice_Setup.exe</code> from official GitHub Releases.</p>
+          <h3>Download Setup v1.0.0</h3>
+          <p>Click <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe" download="GeminiAntigravityOffice_Setup.exe" style="color: var(--purple-neon); font-weight: 700; text-decoration: underline;">Direct Download v1.0.0 (.exe)</a> to get the standalone installer.</p>
         </div>
         <div class="step-card">
           <div class="step-num">02</div>
