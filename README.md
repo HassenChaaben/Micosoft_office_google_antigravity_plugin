@@ -159,9 +159,12 @@ No Python, Node.js, or command line required:
 2. **Run the Installer**:
    Double-click the setup wizard. It automatically:
    - Deploys the standalone daemon and web taskpane to `%LOCALAPPDATA%\GeminiAntigravityOffice`.
-   - Generates and trusts the localhost TLS certificate.
-   - Injects the add-in into Word, PowerPoint, and Excel ribbons.
+   - Generates and trusts the localhost TLS certificate in Windows Certificate Manager.
+   - Injects the add-in into Word, PowerPoint, and Excel ribbons across all installed languages.
    - Configures the background service to start on Windows logon.
+   
+   > [!TIP]
+   > **Windows SmartScreen**: Because this is a free open-source binary without an enterprise code-signing certificate, Windows SmartScreen may show an initial prompt. Simply click **"More info"** &rarr; **"Run anyway"**. If Microsoft Word was open during install, close and reopen it once to refresh the ribbon.
 3. **Launch Microsoft Word**:
    - Open Word (or double-click the **Gemini Antigravity Word** desktop shortcut).
    - In the top ribbon on the **Accueil** (or **Home**) tab, click the black **Gemini** icon button.
