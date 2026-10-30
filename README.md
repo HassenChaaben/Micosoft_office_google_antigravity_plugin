@@ -84,24 +84,35 @@ Gemini Antigravity is an autonomous Office agent that operates directly on docum
 
 ## Engineering Capabilities & Reality Matrix
 
-To provide total clarity on what this tool currently does and what remains on the roadmap:
+To provide total engineering clarity, every feature in Gemini Antigravity is classified under a strict maturity framework:
 
-| Capability | Status | Implementation Details & Current Reality |
-|---|:---:|---|
-| **Microsoft Word Win32 COM Automation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Paragraph rewrites, native table insertion, direct formatting, styles, outline inspection. |
-| **Multimodal Image Prompt Attachments** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Clipboard paste (`Ctrl+V`), photo picker (`#btnAttachPhoto`), drag & drop, local caching in `%LOCALAPPDATA%`. |
-| **Gemini Imagen 3 AI Image Generation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Activated when user enters Gemini API key in Settings; inserts illustrations with captions. |
-| **Live Streaming & Task Interruption** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Real-time SSE token delivery with `⏹ Stop` button and `Esc` keyboard abort. |
-| **Word Ribbon Home Tab Integration** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Permanent ribbon button across all installed Office language packs (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`). |
-| **Offline Test Mock Mode** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`). |
-| **One-Click Turnkey Windows Setup** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Single 51 MB installer (`GeminiAntigravityOffice_Setup.exe`) with auto-cert and auto-registry injection. |
-| **`/skills` Dynamic Skill Execution** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The 6 pills (`/check-doc`, `/copy-edit`, etc.) are **UI preview pills** only; no isolated server-side skill sandboxes exist yet. |
-| **`/plugins` & Custom Connectors Menu** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are **unconnected stubs**. |
-| **`search_web` Internet Research Tool** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The agent is **strictly offline/document-bound**; there is no live web search API integration connected. |
-| **Excel 3-Statement Financial Modeling** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress. |
-| **PowerPoint Executive Storylining** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Slide creation and text boxes work; custom vector shape coordinate layout is in progress. |
-| **macOS / Office Online (Web) Support** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC. |
-| **Cross-Window Multi-Document Sync** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Agent targets active foreground document; multi-doc switching across separate windows is in progress. |
+### Status Classification Criteria & Legend
+
+| Badge | Classification | What This Means |
+|---|---|---|
+| ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | **Production** | **Fully functional & verified**: Native Win32 COM automation is live in desktop Word. Covered by end-to-end automated test suites and packaged in the turnkey `.exe` installer. |
+| ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | **In Progress** | **Active core development**: Foundational COM and daemon endpoints exist, but full feature parity (e.g., linked formulas or vector shapes) is being implemented. **Tracked via open GitHub Project issues**. |
+| ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | **UI Blueprint** | **Visual design prototype**: Interface buttons, pills, and menus exist in the taskpane to establish UX patterns, but dynamic server-side execution sandboxes or third-party OAuth connectors are not yet connected. |
+| ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | **Not Supported** | **Architectural constraint**: Not currently supported due to platform boundaries (e.g. macOS lacking native Win32 COM APIs). Community proposals and pure Office.js fallbacks are welcome. |
+
+### Capabilities Matrix & Issue Tracking
+
+| Capability | Status | Implementation Details & Current Reality | GitHub Issue / Roadmap |
+|---|:---:|---|:---:|
+| **Microsoft Word Win32 COM Automation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | In-place rewrites, native table insertion, direct formatting, styles, outline inspection. | Verified Production |
+| **Multimodal Image Prompt Attachments** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Clipboard paste (`Ctrl+V`), photo picker (`#btnAttachPhoto`), drag & drop, local caching in `%LOCALAPPDATA%`. | Verified Production |
+| **Gemini Imagen 3 AI Image Generation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Activated when user enters Gemini API key in Settings; inserts illustrations with captions. | Verified Production |
+| **Live Streaming & Task Interruption** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Real-time SSE token delivery with `⏹ Stop` button and `Esc` keyboard abort. | Verified Production |
+| **Word Ribbon Home Tab Integration** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Permanent ribbon button across all installed Office language packs (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`). | Verified Production |
+| **Offline Test Mock Mode** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`). | Verified Production |
+| **One-Click Turnkey Windows Setup** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Single 51 MB installer (`GeminiAntigravityOffice_Setup.exe`) with auto-cert and auto-registry injection. | Verified Production |
+| **Excel 3-Statement Financial Modeling** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress. | [Issue #5: Excel Dynamic Modeling](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues/5) |
+| **PowerPoint Executive Storylining** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Slide creation and text boxes work; custom vector shape coordinate layout is in progress. | [Issue #6: PowerPoint Vector Layout](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues/6) |
+| **`/skills` Dynamic Skill Execution** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The 6 pills (`/check-doc`, `/copy-edit`, etc.) are **UI preview pills** only; no isolated server-side skill sandboxes exist yet. | [Roadmap Issue #7: Dynamic Skill Engine](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues/7) |
+| **`/plugins` & Custom Connectors Menu** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are **unconnected stubs**. | [Roadmap Issue #8: External Connectors](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues/8) |
+| **`search_web` Internet Research Tool** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The agent is **strictly offline/document-bound**; there is no live web search API integration connected. | [Roadmap Issue #9: Live Search Integration](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues/9) |
+| **macOS / Office Online (Web) Support** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC. | Architectural RFC |
+| **Cross-Window Multi-Document Sync** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Agent targets active foreground document; multi-doc switching across separate windows is in progress. | Backlog |
 
 ---
 
