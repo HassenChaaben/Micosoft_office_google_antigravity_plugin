@@ -4,7 +4,7 @@
 [![Platform: Windows 11 / 10](https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4.svg?logo=windows)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)
 [![Python: 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
-[![GitHub Releases](https://img.shields.io/badge/Release-v1.0.0--Standalone-success.svg)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
+[![GitHub Releases](https://img.shields.io/badge/Release-v1.0.1--Standalone-success.svg)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
 
 Autonomous, publication-grade AI Copilot for **Microsoft Word**, **Microsoft PowerPoint**, and **Microsoft Excel**, powered by **Google Gemini** and the **Antigravity** cognitive runtime.
 
@@ -13,22 +13,29 @@ Autonomous, publication-grade AI Copilot for **Microsoft Word**, **Microsoft Pow
 
 ---
 
-## 📸 Screenshots & Visual Walkthrough
+## 📸 Visual Walkthrough & Real-World Use Cases
 
-### 1. Microsoft Word Ribbon Integration & Active Taskpane
-Directly embedded inside Microsoft Word with a dedicated **Gemini** button on the Home (Accueil) tab and real-time streaming taskpane:
+The following real-world screenshots demonstrate Gemini Antigravity operating live inside Microsoft Word on an executive technical dossier (*"Progetto di Automazione e Monitoraggio Esecutivo"*):
 
-![Word Ribbon & Taskpane Interface](docs/images/word_ribbon_taskpane.png)
+### 1. Interactive Document Drafting & Table Generation
+Creates publication-grade Word tables with specified headers, row counts, and auto-formatting directly from natural language prompts without creating duplicate paragraphs:
 
-### 2. Autonomous Taskpane Experience
-Clean, modern conversational interface supporting multimodal inputs, slash skills (`/check-doc`, `/copy-edit`, etc.), and live step-by-step tool execution:
+![Document Drafting & Table Generation](docs/images/01_document_drafting_table.png)
 
-![Taskpane Interface](docs/images/taskpane_interface.png)
+### 2. Multi-Table Business & Financial Modeling
+Autonomously structures and formats complex financial breakdown tables (*Tabella 2 – Ripartizione Budget delle Fasi Operative*), harmonizing typography and grid styles with existing document content:
 
-### 3. Local High-Performance Daemon Server
-Localhost HTTPS background daemon (`https://127.0.0.1:18890`) providing Win32 COM automation, MCP bridges, and zero-latency communication:
+![Business & Financial Modeling](docs/images/02_business_financial_modeling.png)
 
-![Local Daemon Terminal](docs/images/daemon_terminal.png)
+### 3. Autonomous Flowchart & Visual Diagramming
+Transforms structured tabular data into executive visual workflow diagrams (*Figura 1 – Diagramma di flusso e avanzamento per fasi*), embedded natively into the Word canvas:
+
+![Visual Diagramming & Flowchart Generation](docs/images/03_flowchart_diagram_generation.png)
+
+### 4. Interactive Multi-Turn Refinement & Styling Control
+Iteratively modifies diagram colors, cleans up phantom blank pages, re-indexes headings, and synchronizes document styles through conversational chat in the taskpane:
+
+![Interactive Multi-Turn Refinement](docs/images/04_iterative_refinement_styling.png)
 
 ---
 
@@ -57,6 +64,8 @@ Gemini Antigravity is an autonomous Office agent that operates directly on docum
 - **Local HTTPS Daemon (`gemini_office_daemon.exe`)**: Self-contained background service compiled with PyInstaller. Runs on port `18890` with auto-generated and pre-trusted Windows root SSL certificates.
 - **Office WEF Sideloading (`wef_register.ps1`)**: Automatically registers the manifest across Word, PowerPoint, and Excel across all Windows UI locales (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`).
 - **Windows Startup**: Automatically launches silently on Windows user logon via `HKCU\...\Run`.
+
+![Local Daemon Terminal](docs/images/daemon_terminal.png)
 
 ---
 

@@ -25,6 +25,7 @@ practical_tests/**/__MACOSX/
 practical_tests/**/.DS_Store
 *.zip
 .DS_Store
+/screenshot_*.png
 
 # Office lock files
 ~$*
