@@ -874,18 +874,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   btnSend.addEventListener('click', sendMessage);
-  if (btnStop) {
-    btnStop.addEventListener('click', async () => {
+
+  let currentAbortController = null;
+
+  async function cancelCurrentRun() {
+    if (btnStop) {
       btnStop.disabled = true;
-      try {
-        await fetch('/api/agent/cancel', { method: 'POST' });
-      } catch (err) {
-        console.warn('[Taskpane] Cancel request error:', err);
-      }
+    }
+    document.querySelectorAll('.btn-chip-stop').forEach(b => {
+      b.disabled = true;
+      b.textContent = 'Stopping...';
     });
+    try {
+      await fetch('/api/agent/cancel', { method: 'POST' });
+    } catch (err) {
+      console.warn('[Taskpane] Cancel request error:', err);
+    }
+    if (currentAbortController) {
+      try { currentAbortController.abort(); } catch (_) {}
+    }
   }
 
+  if (btnStop) {
+    btnStop.addEventListener('click', cancelCurrentRun);
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isStreaming) {
+      e.preventDefault();
+      cancelCurrentRun();
+    }
+  });
+
   async function runWordAgent(text, assistantMsg, modelOverride) {
+    currentAbortController = new AbortController();
     const modelId = modelOverride || modelSelect.value;
     const bubble = assistantMsg.querySelector('.msg-bubble');
     bubble.innerHTML = ''; // Clear default spinner
@@ -898,7 +920,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initial agent starting indicator
     const initChip = document.createElement('div');
     initChip.className = 'agent-step-chip active';
-    initChip.innerHTML = '<div class="agent-step-spinner"></div><span>Agent connecting to Word...</span>';
+    initChip.innerHTML = '<div class="agent-step-spinner"></div><span>Agent connecting to Word...</span><button class="btn-chip-stop" title="Stop">⏹ Stop</button>';
+    const btnInitStop = initChip.querySelector('.btn-chip-stop');
+    if (btnInitStop) btnInitStop.onclick = cancelCurrentRun;
     stepsContainer.appendChild(initChip);
 
     const summaryTextDiv = document.createElement('div');
@@ -948,6 +972,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await fetch('/api/agent/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: currentAbortController ? currentAbortController.signal : undefined,
         body: JSON.stringify({
           prompt: text,
           host: 'Word',
@@ -1059,7 +1084,9 @@ document.addEventListener('DOMContentLoaded', async () => {
               if (!activeSpinnerChip) {
                 activeSpinnerChip = document.createElement('div');
                 activeSpinnerChip.className = 'agent-step-chip active thinking-pulse';
-                activeSpinnerChip.innerHTML = '<div class="agent-step-spinner"></div><span></span>';
+                activeSpinnerChip.innerHTML = '<div class="agent-step-spinner"></div><span></span><button class="btn-chip-stop" title="Stop">⏹ Stop</button>';
+                const btnChipStop = activeSpinnerChip.querySelector('.btn-chip-stop');
+                if (btnChipStop) btnChipStop.onclick = cancelCurrentRun;
                 stepsContainer.appendChild(activeSpinnerChip);
               }
               const span = activeSpinnerChip.querySelector('span');
@@ -1076,7 +1103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const chip = document.createElement('div');
             chip.className = 'agent-step-chip active';
-            chip.innerHTML = `<div class="agent-step-spinner"></div><span>${escapeHtml(humanToolLabel(ev.tool, ev.arguments || {}))}</span>`;
+            chip.innerHTML = `<div class="agent-step-spinner"></div><span>${escapeHtml(humanToolLabel(ev.tool, ev.arguments || {}))}</span><button class="btn-chip-stop" title="Stop">⏹ Stop</button>`;
+            const btnChipStop = chip.querySelector('.btn-chip-stop');
+            if (btnChipStop) btnChipStop.onclick = cancelCurrentRun;
             stepsContainer.appendChild(chip);
             scrollChatToBottom();
 
@@ -1109,7 +1138,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Immediately display reasoning spinner so UI is never perceived as stuck
             activeSpinnerChip = document.createElement('div');
             activeSpinnerChip.className = 'agent-step-chip active thinking-pulse';
-            activeSpinnerChip.innerHTML = '<div class="agent-step-spinner"></div><span>Agent is thinking and planning next action...</span>';
+            activeSpinnerChip.innerHTML = '<div class="agent-step-spinner"></div><span>Agent is thinking and planning next action...</span><button class="btn-chip-stop" title="Stop">⏹ Stop</button>';
+            const btnChipStop2 = activeSpinnerChip.querySelector('.btn-chip-stop');
+            if (btnChipStop2) btnChipStop2.onclick = cancelCurrentRun;
             stepsContainer.appendChild(activeSpinnerChip);
 
             // Report result back to daemon
@@ -1261,8 +1292,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       scrollChatToBottom();
 
     } catch (err) {
-      console.error('[Taskpane] Agent run error:', err);
       initChip.remove();
+      if (activeSpinnerChip) {
+        activeSpinnerChip.remove();
+        activeSpinnerChip = null;
+      }
+      if (err && (err.name === 'AbortError' || err.message === 'The user aborted a request.')) {
+        const note = document.createElement('div');
+        note.className = 'agent-error-card agent-error-soft';
+        note.textContent = 'Stopped. Nothing else will be changed.';
+        bubble.appendChild(note);
+        scrollChatToBottom();
+        return;
+      }
+      console.error('[Taskpane] Agent run error:', err);
       const isNetwork = err && (/Failed to fetch|network error|NetworkError/i.test(err.message || ''));
       bubble.appendChild(buildErrorCard({
         error: isNetwork
@@ -1271,6 +1314,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         code: 'other'
       }, text, modelId));
       scrollChatToBottom();
+    } finally {
+      currentAbortController = null;
     }
   }
 
@@ -1493,11 +1538,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     appendUserMessage(text);
     promptInput.value = '';
     promptInput.style.height = 'auto';
-    updateSendButtonState();
 
     // Prepare Assistant placeholder
     const assistantMsg = createAssistantMessagePlaceholder();
     isStreaming = true;
+    updateSendButtonState();
 
     // In Word host: invoke the autonomous agent manipulating Word directly
     if (currentHost === 'Word') {

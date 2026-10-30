@@ -88,6 +88,14 @@ test('humanToolLabel formats tools for user display', () => {
     humanToolLabel('unknown_custom_tool', {}),
     'Executing unknown_custom_tool...'
   );
+  assert.equal(
+    humanToolLabel('word_delete_column', { table_index: 0, col_index: 2 }),
+    'Deleting column #2 from table #0...'
+  );
+  assert.equal(
+    humanToolLabel('word_delete_row', { table_index: 1, row_index: 3 }),
+    'Deleting row #3 from table #1...'
+  );
 });
 
 test('formatFamilyLabel formats model families with display names', () => {

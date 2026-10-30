@@ -432,16 +432,29 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding-top: 4px;
+  gap: 4px;
+  min-width: 0;
 }
 
-.dock-left-actions, .dock-right-actions {
+.dock-left-actions {
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.dock-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 /* Plus button for Flyout */
 .dock-btn-plus {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
@@ -462,6 +475,7 @@ html, body {
 
 /* Generic dock icon button */
 .dock-btn-icon {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -493,6 +507,9 @@ html, body {
   border-radius: var(--radius-full);
   padding: 0 8px 0 10px;
   height: 26px;
+  min-width: 0;
+  flex: 0 1 auto;
+  max-width: 140px;
 }
 
 .model-select {
@@ -507,6 +524,10 @@ html, body {
   cursor: pointer;
   outline: none;
   padding-right: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .dropdown-chevron {
@@ -518,6 +539,7 @@ html, body {
 
 /* Send Button */
 .dock-btn-send {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
@@ -545,6 +567,7 @@ html, body {
 
 /* Stop Button */
 .dock-btn-stop {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
@@ -564,6 +587,34 @@ html, body {
 }
 
 .dock-btn-stop:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Inline Chip Stop Button */
+.btn-chip-stop {
+  margin-left: auto;
+  background-color: #FEE2E2;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.btn-chip-stop:hover:not(:disabled) {
+  background-color: #DC2626;
+  color: #FFFFFF;
+}
+
+.btn-chip-stop:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
