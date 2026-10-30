@@ -158,26 +158,24 @@ No Python, Node.js, or command line required:
    Download [**GeminiAntigravityOffice_Setup.exe v1.0.0 (Direct Download)**](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases/latest/download/GeminiAntigravityOffice_Setup.exe) or get it from the **[Releases](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)** page.
 2. **Run the Installer**:
    Double-click `GeminiAntigravityOffice_Setup.exe`.
-   
-   > [!TIP]
-   > **Windows Defender SmartScreen Notice**: Because this software is distributed as a free open-source hobby project without a paid corporate code-signing certificate, Windows Defender SmartScreen displays a blue protection window.
-   > 
-   > **To run the installer, follow these two quick steps:**
-   > 1. In the first window, click **`Informations complémentaires`** (or **`More info`**):
-   > 2. Then click **`Exécuter quand même`** (or **`Run anyway`**) at the bottom:
-   >
-   > <p align="center">
-   >   <img src="docs/images/smartscreen_step1_more_info.png" width="370" alt="Step 1: Click Informations complémentaires (More info)">
-   >   &nbsp;&nbsp;
-   >   <img src="docs/images/smartscreen_step2_run_anyway.png" width="370" alt="Step 2: Click Exécuter quand même (Run anyway)">
-   > </p>
-   >
-   > Once clicked, the setup wizard runs with zero technical configuration:
-   > - Deploys the standalone daemon and web taskpane to `%LOCALAPPDATA%\GeminiAntigravityOffice`.
-   > - Generates and trusts the localhost TLS certificate in Windows Certificate Manager (`TrustedPeople`).
-   > - Injects the add-in into Word, PowerPoint, and Excel ribbons across all installed languages.
-   > - Configures the background service to start silently on Windows logon.
-   > - *Note: If Microsoft Word was already running, close and reopen Word once so the new ribbon icon appears.*
+
+> [!TIP]
+> **Windows Defender SmartScreen (First-Time Launch)**  
+> Because this software is an open-source hobby project without a paid corporate certificate, Windows SmartScreen will display an initial protection prompt on new laptops.
+> 
+> Simply follow these two quick steps to launch the setup:
+> 
+> | 1. Click **`Informations complémentaires`** (More info) | 2. Click **`Exécuter quand même`** (Run anyway) |
+> |:---:|:---:|
+> | <img src="docs/images/smartscreen_step1_more_info.png" width="300" alt="Step 1: Click Informations complémentaires"> | <img src="docs/images/smartscreen_step2_run_anyway.png" width="300" alt="Step 2: Click Exécuter quand même"> |
+> 
+> Once clicked, the setup wizard runs with **zero technical configuration**:
+> - Deploys the standalone daemon and web taskpane to `%LOCALAPPDATA%\GeminiAntigravityOffice` (no Python or Node.js required).
+> - Auto-generates and trusts local TLS certificates in Windows Certificate Manager (`TrustedPeople`).
+> - Injects the add-in into Word, PowerPoint, and Excel ribbons across all installed languages.
+> - Configures the background daemon to start silently on Windows logon.
+> - *Note: If Microsoft Word was already open, restart Word once so the new ribbon button appears.*
+
 3. **Launch Microsoft Word**:
    - Open Word (or double-click the **Gemini Antigravity Word** desktop shortcut).
    - In the top ribbon on the **Accueil** (or **Home**) tab, click the black **Gemini** icon button.
