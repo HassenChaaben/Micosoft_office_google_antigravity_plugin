@@ -9,7 +9,7 @@ import json
 import uuid
 import time
 import asyncio
-from typing import Dict, Any, Optional, AsyncGenerator
+from typing import Dict, Any, Optional, AsyncGenerator, List
 
 from . import antigravity_backend
 from .word_tools import is_destructive
@@ -284,7 +284,8 @@ class AgentSession:
     # --- one turn ------------------------------------------------------------------------
 
     def _compose_message(self, chat: Dict[str, Any], first_turn: bool, prompt: str, host: str,
-                         doc_type: Optional[str], document_map: str, doc_url: Optional[str]):
+                         doc_type: Optional[str], document_map: str, doc_url: Optional[str],
+                         image_paths: Optional[List[str]] = None):
         skills = self.skills()
         forced, cleaned = parse_forced(prompt, known={s.name for s in skills})
         routed = route(skills, host.lower(), doc_type, cleaned, forced=forced)
@@ -302,6 +303,17 @@ class AgentSession:
                          + "\n".join(f"- {m['text']}" for m in memories))
         if document_map:
             parts.append(document_map)
+        if image_paths:
+            img_lines = [f"- {p}" for p in image_paths]
+            parts.append(
+                "USER ATTACHED IMAGES / PICTURES:\n"
+                "The user attached the following local image files directly to this request:\n"
+                + "\n".join(img_lines) + "\n\n"
+                "Image instructions:\n"
+                "- If the user wants to insert any attached image into the Word document, call:\n"
+                "  `word_insert_image(file_path=r'<path>', caption='...')`\n"
+                "- You can also reference, describe, analyze or discuss the content of these pictures."
+            )
         parts.append(f"User request:\n{cleaned}")
         return "\n\n".join(parts), routed, new_full
 
@@ -309,7 +321,8 @@ class AgentSession:
                   document_map: str = "", analysis: Optional[Dict[str, Any]] = None,
                   snapshot: Optional[Dict[str, Any]] = None, chat_id: Optional[str] = None,
                   doc_url: Optional[str] = None, doc_title: Optional[str] = None,
-                  effort: Optional[str] = None) -> AsyncGenerator[str, None]:
+                  effort: Optional[str] = None,
+                  image_paths: Optional[List[str]] = None) -> AsyncGenerator[str, None]:
         """Runs one agent turn in the chat's warm agy process. Streams SSE lines to the taskpane."""
         def sse(obj):
             return f"data: {json.dumps(obj, ensure_ascii=False)}\n\n"
@@ -335,7 +348,8 @@ class AgentSession:
             yield sse({"event": "analysis", **analysis})
 
         message, routed, new_full = self._compose_message(
-            chat, first_turn, prompt, host, (analysis or {}).get("doc_type"), document_map, doc_url)
+            chat, first_turn, prompt, host, (analysis or {}).get("doc_type"), document_map, doc_url,
+            image_paths=image_paths)
         yield sse({"event": "skills", "names": [s.name for s in routed["full"]]})
         self.store.add_message(chat["id"], "user", prompt)
 

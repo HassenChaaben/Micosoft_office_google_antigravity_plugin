@@ -409,6 +409,105 @@ html, body {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.11), 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+.dock-card.drag-over {
+  border-color: var(--accent);
+  background-color: rgba(26, 115, 232, 0.04);
+}
+
+/* --------------------------------------------------------------------------
+   Attached Images Preview Bar
+   -------------------------------------------------------------------------- */
+.image-preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 2px 8px 2px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.image-preview-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-hover);
+  padding: 2px 4px 2px 2px;
+  max-width: 160px;
+}
+
+.image-preview-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-preview-info {
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px;
+  overflow: hidden;
+  flex: 1 1 auto;
+}
+
+.image-preview-name {
+  font-size: 11px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.image-preview-size {
+  font-size: 9.5px;
+  color: var(--text-muted);
+}
+
+.image-preview-remove {
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  padding: 0;
+}
+
+.image-preview-remove:hover {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+/* --------------------------------------------------------------------------
+   User Message Image Thumbnails
+   -------------------------------------------------------------------------- */
+.msg-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.user-msg-thumb {
+  max-width: 140px;
+  max-height: 100px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
 .dock-input-wrapper textarea {
   width: 100%;
   border: none;

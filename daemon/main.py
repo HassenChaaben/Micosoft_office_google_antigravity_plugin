@@ -10,6 +10,10 @@ import sys
 import json
 import re
 import argparse
+import base64
+import uuid
+import time
+import asyncio
 import uvicorn
 from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, Request
@@ -167,12 +171,48 @@ async def on_startup():
     except Exception as e:
         print(f"[Daemon] Startup MCP registration notice: {e}")
 
+def _save_attached_images(raw_images: Any) -> List[str]:
+    """Salva le immagini in formato base64 caricate dall'utente nella cartella degli allegati locali."""
+    if not raw_images or not isinstance(raw_images, list):
+        return []
+    attachments_dir = os.path.join(
+        os.environ.get("LOCALAPPDATA", os.path.expanduser("~")),
+        "GeminiAntigravityOffice",
+        "attachments"
+    )
+    os.makedirs(attachments_dir, exist_ok=True)
+    saved_paths = []
+    for idx, img_item in enumerate(raw_images):
+        if not isinstance(img_item, dict):
+            continue
+        try:
+            data_str = img_item.get("data", "")
+            if not data_str:
+                continue
+            if "," in data_str:
+                data_str = data_str.split(",", 1)[1]
+            raw_bytes = base64.b64decode(data_str)
+            orig_name = img_item.get("name") or f"photo_{int(time.time())}_{idx}.png"
+            safe_name = "".join(c for c in orig_name if c.isalnum() or c in ("-", "_", ".")).strip()
+            if not safe_name:
+                safe_name = f"photo_{int(time.time())}_{idx}.png"
+            file_name = f"{uuid.uuid4().hex[:8]}_{safe_name}"
+            dest_path = os.path.join(attachments_dir, file_name)
+            with open(dest_path, "wb") as f:
+                f.write(raw_bytes)
+            saved_paths.append(dest_path)
+        except Exception as e:
+            print(f"[Daemon] Errore nel salvataggio dell'immagine allegata: {e}")
+    return saved_paths
+
+
 @app.post("/api/agent/run")
 async def agent_run(request: Request):
     payload = await request.json()
     prompt = payload.get("prompt", "")
     host = payload.get("host", "Word")
     model = payload.get("model", "gemini-3.8-flash-high")
+    image_paths = _save_attached_images(payload.get("images"))
 
     if agent_session.is_running:
         async def _already_running_stream():
@@ -196,7 +236,8 @@ async def agent_run(request: Request):
             chat_id=payload.get("chat_id"),
             doc_url=payload.get("doc_url"),
             doc_title=payload.get("doc_title"),
-            effort=payload.get("effort")
+            effort=payload.get("effort"),
+            image_paths=image_paths
         ):
             if "Another agent task is already running" in chunk and '"code":' not in chunk:
                 try:
@@ -342,6 +383,9 @@ async def agent_reset():
 @app.post("/api/chat")
 async def chat_endpoint(request: Request):
     payload = await request.json()
+    image_paths = _save_attached_images(payload.get("images"))
+    if image_paths:
+        payload["image_paths"] = image_paths
     return StreamingResponse(
         gemini_client.stream_chat(payload),
         media_type="text/event-stream"

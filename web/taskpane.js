@@ -252,6 +252,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnSyncConfig = document.getElementById('btnSyncConfig');
   const menuAddFiles = document.getElementById('menuAddFiles');
   const fileUploadInput = document.getElementById('fileUploadInput');
+  const btnAttachPhoto = document.getElementById('btnAttachPhoto');
+  const imageUploadInput = document.getElementById('imageUploadInput');
+  const imagePreviewBar = document.getElementById('imagePreviewBar');
+  const dockCard = document.querySelector('.dock-card');
   const menuSearchWeb = document.getElementById('menuSearchWeb');
   const manageSkillsLink = document.getElementById('manageSkillsLink');
   const slashMenu = document.getElementById('slashMenu');
@@ -260,6 +264,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentHost = 'Office';
   let isWebSearchEnabled = true;
   let attachedFiles = [];
+  let attachedImages = [];
   let attachedDocumentContext = null;
   let conversations = [];
   let isStreaming = false;
@@ -476,20 +481,149 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Add Files
+  // -------------------------------------------------------------------------
+  // Attached Images (Photos, Screenshots, Clipboard Paste, Drag & Drop)
+  // -------------------------------------------------------------------------
+  function renderImagePreviews() {
+    if (!imagePreviewBar) return;
+    if (attachedImages.length === 0) {
+      imagePreviewBar.innerHTML = '';
+      imagePreviewBar.classList.add('hidden');
+      return;
+    }
+    imagePreviewBar.innerHTML = '';
+    imagePreviewBar.classList.remove('hidden');
+    attachedImages.forEach((img, idx) => {
+      const chip = document.createElement('div');
+      chip.className = 'image-preview-chip';
+      chip.innerHTML = `
+        <img src="${escapeHtml(img.data)}" class="image-preview-thumb" alt="${escapeHtml(img.name)}" />
+        <div class="image-preview-info">
+          <span class="image-preview-name" title="${escapeHtml(img.name)}">${escapeHtml(img.name)}</span>
+          <span class="image-preview-size">${img.size ? Math.round(img.size / 1024) + ' KB' : 'Image'}</span>
+        </div>
+        <button type="button" class="image-preview-remove" title="Remove picture" data-idx="${idx}">&times;</button>
+      `;
+      chip.querySelector('.image-preview-remove').onclick = (e) => {
+        e.stopPropagation();
+        removeAttachedImage(idx);
+      };
+      imagePreviewBar.appendChild(chip);
+    });
+  }
+
+  function removeAttachedImage(idx) {
+    attachedImages.splice(idx, 1);
+    renderImagePreviews();
+    updateSendButtonState();
+  }
+
+  function addAttachedImage(fileOrBlob, filename) {
+    if (!fileOrBlob || !fileOrBlob.type || !fileOrBlob.type.startsWith('image/')) {
+      return;
+    }
+    const name = filename || fileOrBlob.name || `photo_${Date.now()}.png`;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      attachedImages.push({
+        name: name,
+        data: e.target.result,
+        mimeType: fileOrBlob.type || 'image/png',
+        size: fileOrBlob.size || 0
+      });
+      renderImagePreviews();
+      updateSendButtonState();
+    };
+    reader.readAsDataURL(fileOrBlob);
+  }
+
+  // Attach Picture Button Click
+  if (btnAttachPhoto && imageUploadInput) {
+    btnAttachPhoto.addEventListener('click', () => {
+      imageUploadInput.click();
+    });
+    imageUploadInput.addEventListener('change', () => {
+      if (imageUploadInput.files && imageUploadInput.files.length > 0) {
+        Array.from(imageUploadInput.files).forEach(f => {
+          if (f.type.startsWith('image/')) {
+            addAttachedImage(f, f.name);
+          }
+        });
+        imageUploadInput.value = '';
+      }
+    });
+  }
+
+  // Add Files / Photos from Flyout Menu
   menuAddFiles.addEventListener('click', () => {
     fileUploadInput.click();
     flyoutMenu.classList.add('hidden');
   });
 
   fileUploadInput.addEventListener('change', () => {
-    if (fileUploadInput.files.length > 0) {
-      const file = fileUploadInput.files[0];
-      attachedFiles.push(file);
-      contextText.textContent = `Attached: ${file.name}`;
-      contextBar.classList.remove('hidden');
+    if (fileUploadInput.files && fileUploadInput.files.length > 0) {
+      Array.from(fileUploadInput.files).forEach(file => {
+        if (file.type && file.type.startsWith('image/')) {
+          addAttachedImage(file, file.name);
+        } else {
+          attachedFiles.push(file);
+          contextText.textContent = `Attached: ${file.name}`;
+          contextBar.classList.remove('hidden');
+        }
+      });
+      fileUploadInput.value = '';
+      updateSendButtonState();
     }
   });
+
+  // Paste image directly from clipboard (e.g. Snipping Tool, screenshot, copied image)
+  if (promptInput) {
+    promptInput.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type && items[i].type.startsWith('image/')) {
+          const blob = items[i].getAsFile();
+          if (blob) {
+            e.preventDefault();
+            addAttachedImage(blob, `screenshot_${new Date().toISOString().slice(11, 19).replace(/:/g, '')}.png`);
+          }
+        }
+      }
+    });
+  }
+
+  // Drag and Drop image files onto the dock
+  if (dockCard) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dockCard.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dockCard.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'dragend'].forEach(eventName => {
+      dockCard.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dockCard.classList.remove('drag-over');
+      });
+    });
+
+    dockCard.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dockCard.classList.remove('drag-over');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        Array.from(e.dataTransfer.files).forEach(f => {
+          if (f.type && f.type.startsWith('image/')) {
+            addAttachedImage(f, f.name);
+          }
+        });
+      }
+    });
+  }
 
   // Skills flyout submenu items
   document.querySelectorAll('#submenuSkills .sub-item').forEach(item => {
@@ -870,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (btnStop) {
         btnStop.classList.add('hidden');
       }
-      btnSend.disabled = promptInput.value.trim().length === 0;
+      btnSend.disabled = promptInput.value.trim().length === 0 && attachedImages.length === 0;
     }
   }
 
@@ -907,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  async function runWordAgent(text, assistantMsg, modelOverride) {
+  async function runWordAgent(text, assistantMsg, modelOverride, images = []) {
     currentAbortController = new AbortController();
     const modelId = modelOverride || modelSelect.value;
     const bubble = assistantMsg.querySelector('.msg-bubble');
@@ -979,6 +1113,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           host: 'Word',
           model: modelId,
           chat_id: currentChatId || undefined,
+          images: (images || []).map(img => ({
+            name: img.name,
+            data: img.data,
+            mime_type: img.mimeType || 'image/png'
+          })),
           ...docContext
         })
       });
@@ -1529,14 +1668,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadModels();
 
   async function sendMessage() {
-    const text = promptInput.value.trim();
-    if (!text || isStreaming) return;
+    let text = promptInput.value.trim();
+    if ((!text && attachedImages.length === 0) || isStreaming) return;
+
+    if (!text && attachedImages.length > 0) {
+      text = 'Please inspect the attached picture and assist me with it in Microsoft Word.';
+    }
 
     // Transition from onboarding to chat mode
     showChatView();
 
+    // Snapshot attached images & reset preview
+    const currentImages = [...attachedImages];
+    attachedImages = [];
+    renderImagePreviews();
+
     // Append User Message Bubble
-    appendUserMessage(text);
+    appendUserMessage(text, currentImages);
     promptInput.value = '';
     promptInput.style.height = 'auto';
 
@@ -1548,7 +1696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // In Word host: invoke the autonomous agent manipulating Word directly
     if (currentHost === 'Word') {
       try {
-        await runWordAgent(text, assistantMsg);
+        await runWordAgent(text, assistantMsg, undefined, currentImages);
       } finally {
         isStreaming = false;
         updateSendButtonState();
@@ -1580,7 +1728,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       host: currentHost,
       web_search: isWebSearchEnabled,
       document_context: docContext || '',
-      attached_files: attachedFiles.map(f => f.name)
+      attached_files: attachedFiles.map(f => f.name),
+      images: (currentImages || []).map(img => ({
+        name: img.name,
+        data: img.data,
+        mime_type: img.mimeType || 'image/png'
+      }))
     };
 
     try {
@@ -1640,10 +1793,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function appendUserMessage(text) {
+  function appendUserMessage(text, images = []) {
     const msgDiv = document.createElement('div');
     msgDiv.className = 'chat-message user';
-    msgDiv.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div>`;
+    let imagesHtml = '';
+    if (images && images.length > 0) {
+      imagesHtml = `<div class="msg-images">${images.map(img => `<img src="${escapeHtml(img.data)}" class="user-msg-thumb" alt="${escapeHtml(img.name)}" title="${escapeHtml(img.name)}" />`).join('')}</div>`;
+    }
+    msgDiv.innerHTML = `${imagesHtml}<div class="msg-bubble">${escapeHtml(text)}</div>`;
     chatMessages.appendChild(msgDiv);
     scrollChatToBottom();
   }
