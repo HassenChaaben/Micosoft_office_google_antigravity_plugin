@@ -314,7 +314,6 @@ class AgyProcess:
         if self._conversation_id:
             args += ["--conversation", self._conversation_id]
         args += self.extra_args
-        args += ["-p", ""]
         return args
 
     def build_env(self) -> Dict[str, str]:

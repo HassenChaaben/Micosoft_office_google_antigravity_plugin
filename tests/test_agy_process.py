@@ -192,7 +192,7 @@ def test_single_turn_success(tmp_path):
     assert argv[argv.index("--model") + 1] == "gemini-3.8-flash-low"
     assert argv[argv.index("--input-format") + 1] == "stream-json"
     assert argv[argv.index("--output-format") + 1] == "stream-json"
-    assert argv[-2:] == ["-p", ""]
+    assert "-p" not in argv
 
 
 def test_args_include_effort_conversation_and_extra(tmp_path):

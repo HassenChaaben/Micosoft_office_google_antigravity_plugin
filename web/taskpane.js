@@ -1261,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       console.error('[Taskpane] Agent run error:', err);
       initChip.remove();
-      const isNetwork = err && (err.name === 'TypeError' || /fetch|network/i.test(err.message || ''));
+      const isNetwork = err && (/Failed to fetch|network error|NetworkError/i.test(err.message || ''));
       bubble.appendChild(buildErrorCard({
         error: isNetwork
           ? 'Cannot reach the local Antigravity service. Make sure it is running, then try again.'
