@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Antigravity for Microsoft Office — Autonomous AI Agent</title>
+  <meta name="description" content="Autonomous, publication-grade AI agent that operates directly on document objects inside Microsoft Word on Windows, powered by Google Gemini and Antigravity runtime.">
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0A0B0E;
+      --bg-secondary: #111318;
+      --bg-tertiary: #181B22;
+      --bg-card: #13151B;
+      --border-subtle: #222631;
+      --border-accent: #323847;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --accent-blue: #38BDF8;
+      --accent-emerald: #10B981;
+      --accent-purple: #818CF8;
+      --accent-amber: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Subtle Background Grid & Gradients */
+    .bg-glow {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 600px;
+      background: radial-gradient(circle at 50% 150px, rgba(56, 189, 248, 0.08) 0%, rgba(129, 140, 248, 0.04) 40%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navbar */
+    header {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(10, 11, 14, 0.85);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--text-primary);
+      color: #000;
+      border: 1px solid #fff;
+    }
+
+    .btn-primary:hover {
+      background: #E2E8F0;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-accent);
+    }
+
+    .btn-secondary:hover {
+      background: #20242E;
+      border-color: #475569;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 96px 0 64px;
+      text-align: center;
+    }
+
+    .version-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      color: var(--accent-blue);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .version-badge span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #CBD5E1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p.lead {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 760px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Visual Showcase */
+    .showcase {
+      margin: 64px 0 96px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .gallery-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-accent);
+    }
+
+    .gallery-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .gallery-card-body {
+      padding: 20px;
+    }
+
+    .gallery-card-body h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .gallery-card-body p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Capabilities Matrix */
+    .matrix-section {
+      padding: 64px 0;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .matrix-table th {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      text-align: left;
+      padding: 16px 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .matrix-table td {
+      padding: 16px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+
+    .matrix-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-prod {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-partial {
+      background: rgba(245, 158, 11, 0.12);
+      color: #FBBF24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-stub {
+      background: rgba(100, 116, 139, 0.12);
+      color: #94A3B8;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-unsupported {
+      background: rgba(239, 68, 68, 0.12);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Workflow & Steps */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 28px 24px;
+      position: relative;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-accent);
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .step-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .step-card p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* Code block */
+    pre {
+      background: #0D0E12;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.825rem;
+      color: #E2E8F0;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 48px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    footer a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 840px) {
+      .hero h1 { font-size: 2.5rem; }
+      .gallery-grid, .steps-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container navbar">
+      <a href="#" class="nav-brand">
+        <img src="logo.svg" alt="Gemini Antigravity Logo">
+        <span>Gemini Antigravity</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#showcase">Evidence</a></li>
+        <li><a href="#capabilities">Capabilities Matrix</a></li>
+        <li><a href="#install">Installation</a></li>
+        <li><a href="#contributing">Contributing (dev)</a></li>
+        <li><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" target="_blank">GitHub</a></li>
+      </ul>
+      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-primary" target="_blank">
+        Download v1.0.0 Setup
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="version-badge">
+        <span class="dot"></span>
+        v1.0.0 Production Release Live
+      </div>
+      <h1>Autonomous AI Copilot for<br>Microsoft Office</h1>
+      <p class="lead">
+        Operates directly on native document objects inside Microsoft Word on Windows. Built with Google Gemini, Win32 COM automation, multimodal prompt attachments, and turnkey background daemon execution.
+      </p>
+      <div class="hero-actions">
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-primary" target="_blank">
+          ⬇️ Download Standalone Installer (.exe)
+        </a>
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn btn-secondary" target="_blank">
+          View Repository on GitHub
+        </a>
+      </div>
+    </section>
+
+    <!-- Visual Evidence Showcase -->
+    <section id="showcase" class="showcase">
+      <div class="section-header">
+        <h2>Production Evidence in Microsoft Word</h2>
+        <p>Live captures of Gemini Antigravity drafting and refining an executive technical dossier (<em>"Progetto di Automazione e Monitoraggio Esecutivo"</em>).</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-card">
+          <img src="images/01_document_drafting_table.png" alt="Document Drafting & Table Insertion">
+          <div class="gallery-card-body">
+            <h3>1. Document Drafting & Publication Tables</h3>
+            <p>Perceives document structure and inserts styled multi-column tables with auto-column width and native borders without phantom duplicates.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="images/02_business_financial_modeling.png" alt="Multi-Table Financial Modeling">
+          <div class="gallery-card-body">
+            <h3>2. Business & Financial Modeling</h3>
+            <p>Creates secondary budget allocation matrices comparing planned estimates against actual costs with structured numeric precision.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="images/03_flowchart_diagram_generation.png" alt="Autonomous Process Flowcharts">
+          <div class="gallery-card-body">
+            <h3>3. Autonomous Process Flowcharts</h3>
+            <p>Renders visual milestone roadmaps, KPI badges, and phase cards directly into the Word document flow.</p>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="images/04_iterative_refinement_styling.png" alt="Multi-Turn Conversational Memory">
+          <div class="gallery-card-body">
+            <h3>4. Conversational Memory & Taskpane</h3>
+            <p>Multi-turn session persistence, interactive conversation drawer, real-time token streaming, and instant task abortion via <code>Esc</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capabilities Matrix -->
+    <section id="capabilities" class="matrix-section">
+      <div class="section-header">
+        <h2>Engineering Capabilities & Reality Matrix</h2>
+        <p>Total transparency: what works today in production versus features open for community contribution.</p>
+      </div>
+
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Module / Capability</th>
+            <th>Status</th>
+            <th>Implementation Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Microsoft Word Win32 COM Engine</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>In-place rewrites, native table insertion, direct formatting, styles, and outline inspection.</td>
+          </tr>
+          <tr>
+            <td><strong>Multimodal Prompt Image Attachments</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>Clipboard screenshot paste (<code>Ctrl+V</code>), photo picker, drag & drop, and local caching.</td>
+          </tr>
+          <tr>
+            <td><strong>Gemini Imagen 3 AI Image Generation</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>Activated via personal Gemini API key in Settings; generates and embeds figures with captions.</td>
+          </tr>
+          <tr>
+            <td><strong>Turnkey Standalone Windows Setup</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>Self-contained 51 MB installer (<code>GeminiAntigravityOffice_Setup.exe</code>) with auto-certs and silent startup.</td>
+          </tr>
+          <tr>
+            <td><strong>Office Ribbon Home Tab Integration</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>Registers manifest across all Windows UI languages (<code>en-US</code>, <code>fr-FR</code>, <code>it-IT</code>, <code>de-DE</code>, <code>es-ES</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Excel 3-Statement Financial Modeling</strong></td>
+            <td><span class="badge-status badge-partial">● In Progress</span></td>
+            <td>Basic table generation works; multi-sheet dynamic formula linkage is in development.</td>
+          </tr>
+          <tr>
+            <td><strong>PowerPoint Executive Storylining</strong></td>
+            <td><span class="badge-status badge-partial">● In Progress</span></td>
+            <td>Slide generation works; complex shape coordinate layout is in development.</td>
+          </tr>
+          <tr>
+            <td><strong><code>/skills</code> Dynamic Execution</strong></td>
+            <td><span class="badge-status badge-stub">● UI Prototype</span></td>
+            <td>Onboarding buttons exist in UI; dynamic server-side sandbox execution is open for contribution.</td>
+          </tr>
+          <tr>
+            <td><strong><code>/plugins</code> External Connectors</strong></td>
+            <td><span class="badge-status badge-stub">● UI Prototype</span></td>
+            <td>Flyout menu exists; live connectors (GitHub, Jira, Notion) are open for contribution.</td>
+          </tr>
+          <tr>
+            <td><strong>macOS & Web Office.js Fallback</strong></td>
+            <td><span class="badge-status badge-unsupported">● Roadmap</span></td>
+            <td>Architecture currently requires native Windows Win32 COM and local Windows daemon IPC.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Installation & Setup -->
+    <section id="install" class="matrix-section">
+      <div class="section-header">
+        <h2>Turnkey Installation (30 Seconds)</h2>
+        <p>No Python, Node.js, or command line required for end users.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Download Setup</h3>
+          <p>Get <code>GeminiAntigravityOffice_Setup.exe</code> from the official GitHub Releases page.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Run Setup Wizard</h3>
+          <p>Follow the installer wizard. It pre-installs the daemon, generates root TLS certificates, and sideloads the Office manifest automatically.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Open Word</h3>
+          <p>Launch Microsoft Word and click the <strong>Gemini</strong> button in the Home ribbon tab to start your copilot.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contributing -->
+    <section id="contributing" class="matrix-section">
+      <div class="section-header">
+        <h2>Open Source & Contributing</h2>
+        <p>We welcome pull requests to expand automation across the Microsoft Office suite.</p>
+      </div>
+
+      <div class="step-card" style="max-width: 800px; margin: 0 auto;">
+        <h3>🌿 Two-Tier Git Workflow</h3>
+        <p style="margin-bottom: 12px;">All active development takes place on the <strong><code>dev</code></strong> branch. Please open all Pull Requests against <strong><code>dev</code></strong>:</p>
+        <pre><code># 1. Clone & checkout development branch
+git checkout dev
+git pull origin dev
+
+# 2. Create your feature branch
+git checkout -b feat/my-new-feature
+
+# 3. Commit & push
+git commit -m "feat: add support for custom chart themes"
+git push -u origin feat/my-new-feature
+
+# 4. Open a Pull Request targeting 'base: dev' on GitHub</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>
+        <strong>Gemini Antigravity for Microsoft Office</strong> • Created & Maintained by <a href="https://github.com/HassenChaaben" target="_blank">Hassen Ben Chaaben</a>
+      </p>
+      <p style="margin-top: 8px;">
+        Released under the MIT License • Documentation hosted via GitHub Pages
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

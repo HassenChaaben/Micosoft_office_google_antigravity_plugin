@@ -14,18 +14,20 @@
   <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin"><img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4.svg?logo=windows" alt="Platform: Windows 11 / 10"></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python" alt="Python: 3.12"></a>
   <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi" alt="FastAPI"></a>
-  <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases"><img src="https://img.shields.io/badge/Release-v1.0.1--Standalone-success.svg" alt="GitHub Releases"></a>
+  <a href="https://hassenchaaben.github.io/Micosoft_office_google_antigravity_plugin/"><img src="https://img.shields.io/badge/Documentation-GitHub%20Pages-0A0B0E.svg?style=flat-square&logo=github&logoColor=white" alt="Documentation"></a>
+  <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases"><img src="https://img.shields.io/badge/Release-v1.0.0--Standalone-10B981.svg?style=flat-square" alt="GitHub Releases"></a>
 </p>
 
-> 🔗 **Repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git)  
-> 📦 **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
+> **Repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)  
+> **Documentation Portal**: [https://hassenchaaben.github.io/Micosoft_office_google_antigravity_plugin/](https://hassenchaaben.github.io/Micosoft_office_google_antigravity_plugin/)  
+> **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
 
 > [!NOTE]
 > **Current Scope & Community Contributions**: Gemini Antigravity currently focuses on and is production-tested for **Microsoft Office (Word)** on Windows. We are actively waiting for and warmly welcoming **community contributions** to expand native automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform support for **macOS**! Check out the [Zero-Fluff Matrix](#-exact-capabilities--what-is-missing-zero-fluff-matrix) and open a PR against the `dev` branch.
 
 ---
 
-## 📸 Visual Walkthrough & Real-World Use Cases
+## Visual Walkthrough & Real-World Use Cases
 
 The following real-world screenshots demonstrate Gemini Antigravity operating live inside Microsoft Word on an executive technical dossier (*"Progetto di Automazione e Monitoraggio Esecutivo"*):
 
@@ -51,7 +53,7 @@ Iterative refinement across complex documents. The user opens the **"Your conver
 
 ---
 
-## ⚡ What We Have Built
+## Core Architecture & Capabilities
 
 Gemini Antigravity is an autonomous Office agent that operates directly on document objects rather than just returning markdown text. It bridges the modern **Google Gemini** model family with native desktop Office applications via a local background daemon.
 
@@ -80,26 +82,26 @@ Gemini Antigravity is an autonomous Office agent that operates directly on docum
 
 ---
 
-## 🔍 Exact Capabilities & What is Missing (Zero-Fluff Matrix)
+## Engineering Capabilities & Reality Matrix
 
 To provide total clarity on what this tool currently does and what remains on the roadmap:
 
 | Capability | Status | Implementation Details & Current Reality |
 |---|:---:|---|
-| **Microsoft Word Win32 COM Automation** | ✅ Production | Paragraph rewrites, native table insertion, direct formatting, styles, outline inspection. |
-| **Multimodal Image Prompt Attachments** | ✅ Production | Clipboard paste (`Ctrl+V`), photo picker (`#btnAttachPhoto`), drag & drop, local caching in `%LOCALAPPDATA%`. |
-| **Gemini Imagen 3 AI Image Generation** | ✅ Production | Activated when user enters Gemini API key in Settings; inserts illustrations with captions. |
-| **Live Streaming & Task Interruption** | ✅ Production | Real-time SSE token delivery with `⏹ Stop` button and `Esc` keyboard abort. |
-| **Word Ribbon Home Tab Integration** | ✅ Production | Permanent ribbon button across all installed Office language packs (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`). |
-| **Offline Test Mock Mode** | ✅ Production | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`). |
-| **One-Click Turnkey Windows Setup** | ✅ Production | Single 51 MB installer (`GeminiAntigravityOffice_Setup.exe`) with auto-cert and auto-registry injection. |
-| **`/skills` Dynamic Skill Execution** | ❌ Not Working Yet | The 6 pills (`/check-doc`, `/copy-edit`, etc.) are **UI preview pills** only; no isolated server-side skill sandboxes exist yet. |
-| **`/plugins` & Custom Connectors Menu** | ❌ Not Working Yet | The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are **unconnected stubs**. |
-| **`search_web` Internet Research Tool** | ❌ Not Working Yet | The agent is **strictly offline/document-bound**; there is no live web search API integration connected. |
-| **Excel 3-Statement Financial Modeling** | ⚠️ Partial | Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress. |
-| **PowerPoint Executive Storylining** | ⚠️ Partial | Slide creation and text boxes work; custom vector shape coordinate layout is in progress. |
-| **macOS / Office Online (Web) Support** | ❌ Not Supported | Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC. |
-| **Cross-Window Multi-Document Sync** | ❌ Not Supported | Agent targets active foreground document; multi-doc switching across separate windows is in progress. |
+| **Microsoft Word Win32 COM Automation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Paragraph rewrites, native table insertion, direct formatting, styles, outline inspection. |
+| **Multimodal Image Prompt Attachments** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Clipboard paste (`Ctrl+V`), photo picker (`#btnAttachPhoto`), drag & drop, local caching in `%LOCALAPPDATA%`. |
+| **Gemini Imagen 3 AI Image Generation** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Activated when user enters Gemini API key in Settings; inserts illustrations with captions. |
+| **Live Streaming & Task Interruption** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Real-time SSE token delivery with `⏹ Stop` button and `Esc` keyboard abort. |
+| **Word Ribbon Home Tab Integration** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Permanent ribbon button across all installed Office language packs (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`). |
+| **Offline Test Mock Mode** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`). |
+| **One-Click Turnkey Windows Setup** | ![Production](https://img.shields.io/badge/Production-10B981?style=flat-square) | Single 51 MB installer (`GeminiAntigravityOffice_Setup.exe`) with auto-cert and auto-registry injection. |
+| **`/skills` Dynamic Skill Execution** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The 6 pills (`/check-doc`, `/copy-edit`, etc.) are **UI preview pills** only; no isolated server-side skill sandboxes exist yet. |
+| **`/plugins` & Custom Connectors Menu** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are **unconnected stubs**. |
+| **`search_web` Internet Research Tool** | ![UI Blueprint](https://img.shields.io/badge/UI_Blueprint-6366F1?style=flat-square) | The agent is **strictly offline/document-bound**; there is no live web search API integration connected. |
+| **Excel 3-Statement Financial Modeling** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress. |
+| **PowerPoint Executive Storylining** | ![In Progress](https://img.shields.io/badge/In_Progress-F59E0B?style=flat-square) | Slide creation and text boxes work; custom vector shape coordinate layout is in progress. |
+| **macOS / Office Online (Web) Support** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC. |
+| **Cross-Window Multi-Document Sync** | ![Not Supported](https://img.shields.io/badge/Not_Supported-EF4444?style=flat-square) | Agent targets active foreground document; multi-doc switching across separate windows is in progress. |
 
 ---
 
@@ -116,19 +118,22 @@ In the onboarding view of the taskpane, there are 6 clickable skill pill buttons
 - `/industry-overview` (Market analysis draft)
 - `/storylining` (Executive narrative structuring)
 
-> ⚠️ **Current Reality**: Clicking these buttons currently only pastes suggested starter text into `#promptInput`. There is **no dynamic server-side Python execution engine** that loads isolated skills from `daemon/skills/`. All requests are routed through the single monolithic `word_agent` / `gemini_client` prompt pipeline. PRs to introduce a modular skill runner are warmly welcomed!
+> [!WARNING]
+> **Current Reality**: Clicking these buttons currently only pastes suggested starter text into `#promptInput`. There is **no dynamic server-side Python execution engine** that loads isolated skills from `daemon/skills/`. All requests are routed through the single monolithic `word_agent` / `gemini_client` prompt pipeline. PRs to introduce a modular skill runner are warmly welcomed!
 
 #### 2. The `/plugins` & Connectors Menu Is a Non-Functional Prototype
 In the input dock card, clicking the `+` flyout button displays a "Connectors" option (`#menuConnectors`) intended for third-party integrations (GitHub, Jira, Google Workspace, Notion).
 
-> ⚠️ **Current Reality**: This menu is currently a **visual mockup**. No backend API connectors exist to fetch remote files, synchronize issues, or query external tools. The agent currently only operates on the locally active Office document.
+> [!WARNING]
+> **Current Reality**: This menu is currently a **visual mockup**. No backend API connectors exist to fetch remote files, synchronize issues, or query external tools. The agent currently only operates on the locally active Office document.
 
 #### 3. The `search_web` Tool Is Not Connected
 When the agent drafts scientific or business sections (e.g. the Quantum Computing overview on Page 5 of the sample document), users may expect live internet browsing or citations.
 
-> ⚠️ **Current Reality**: The agent currently has **no live search provider connected** (e.g., Google Custom Search API, Serper, or Tavily). The agent generates document text purely based on the LLM's parametric knowledge and the text extracted from the user's active document. Live web browsing and retrieval-augmented verification are planned for v1.1.0.
+> [!WARNING]
+> **Current Reality**: The agent currently has **no live search provider connected** (e.g., Google Custom Search API, Serper, or Tavily). The agent generates document text purely based on the LLM's parametric knowledge and the text extracted from the user's active document. Live web browsing and retrieval-augmented verification are planned for v1.1.0.
 
-## 🚀 Quick Setup & Installation
+## Quick Setup & Installation
 
 ### Option A: Install via Standalone Windows Setup *(Recommended)*
 
@@ -186,22 +191,22 @@ The output installer will be generated at:
 
 ---
 
-## 🤝 Open for Contribution
+## Open for Contribution
 
 This project is **100% open-source** and actively welcomes community contributions!
 
 We welcome pull requests for:
-- 💡 **New Office Skills**: Adding specialized `/commands` for legal contracts, medical papers, or academic theses.
-- 📊 **Excel Autonomous Modeling**: Enhancing formula graphs and financial statements.
-- 🎨 **PowerPoint Slide Automation**: Richer slide layouts and visual themes.
-- 🍎 **macOS & Web Office.js Compatibility**: Expanding pure Office.js fallback tools for cross-platform support.
+- **Custom Skills & Routines**: Adding specialized `/commands` for legal contracts, medical papers, or academic theses.
+- **Excel Modeling Engine**: Enhancing formula graphs, balance sheets, and financial statements.
+- **PowerPoint Automation**: Richer slide layouts, master templates, and visual themes.
+- **Cross-Platform Compatibility**: Expanding pure Office.js fallback tools for macOS and Web support.
 
-### 🌿 Git Branching Model & PR Workflow
+### Git Branching Model & PR Workflow
 To maintain release stability, we follow a strict two-tier branch workflow:
 - **`dev` (Development Branch)**: The active development and staging branch where all new features, enhancements, and fixes are tested. **All contributor Pull Requests MUST target the `dev` branch**.
 - **`main` (Production Branch)**: Stable, production-ready releases. Maintainers periodically merge `dev` into `main` to publish official installer builds.
 
-### 🚀 How to Contribute
+### How to Contribute
 1. **Fork the repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)
 2. **Branch from `dev`**: Always create your feature branch from `dev`:
    ```bash
@@ -221,7 +226,7 @@ To maintain release stability, we follow a strict two-tier branch workflow:
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
 
