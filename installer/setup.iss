@@ -5,7 +5,7 @@
 ; =====================================================================
 
 #define MyAppName "Gemini Antigravity Office"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Google Antigravity"
 #define MyAppURL "https://github.com/HassenChaaben"
 #define MyAppExeName "gemini_office_daemon.exe"

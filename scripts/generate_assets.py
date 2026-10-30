@@ -93,7 +93,7 @@ def generate_banner(output_path):
     draw.text((180, 95), "Gemini Antigravity", fill=(255, 255, 255), font=font_title)
     draw.text((180, 132), "Native AI Engine for Microsoft Office", fill=(56, 189, 248), font=font_sub)
     draw.text((180, 158), "Word, PowerPoint & Excel Autonomous Copilot", fill=(203, 213, 225), font=font_detail)
-    draw.text((180, 198), "Google DeepMind Antigravity Edition • v1.0.0", fill=(148, 163, 184), font=font_small)
+    draw.text((180, 198), "Google DeepMind Antigravity Edition • v1.0.1", fill=(148, 163, 184), font=font_small)
 
     img.save(output_path, "BMP")
     print(f"Generated Installer Banner at {output_path}")
@@ -111,10 +111,12 @@ def main():
     images = {}
     for s in sizes:
         png_path = os.path.join(assets_dir, f"icon-{s}.png")
+        gemini_png_path = os.path.join(assets_dir, f"icon-gemini-{s}.png")
         img = render_icon(s, color=(0, 0, 0))
         img.save(png_path, "PNG")
+        img.save(gemini_png_path, "PNG")
         images[s] = img
-        print(f"Generated {png_path} ({s}x{s})")
+        print(f"Generated {png_path} and {gemini_png_path} ({s}x{s})")
 
     # 3. Multi-resolution Favicon / ICO
     ico_path = os.path.join(assets_dir, "favicon.ico")

@@ -16,6 +16,10 @@ Remove-Item -Path "HKCU:\Software\Microsoft\Office\16.0\WEF\TrustedCatalogs\$gui
 # Remove Startup Run Key
 Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "GeminiAntigravityOffice" -Force
 
+# Clean WEF ribbon cache and manifests
+Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\Office\16.0\Wef" -Recurse -Filter "*7f89b2e3*" -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+Get-ChildItem -Path "$env:LOCALAPPDATA\Microsoft\Office\16.0\Wef" -Recurse -Filter "*wa200099999*" -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+
 # Kill running daemon process if alive
 Get-Process -Name "gemini_office_daemon" | Stop-Process -Force
 
