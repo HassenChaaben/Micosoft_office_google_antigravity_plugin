@@ -1225,8 +1225,24 @@
         </div>
       </div>
 
-      <div style="max-width: 860px; margin: 28px auto 0; padding: 16px 24px; border-radius: 12px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.88rem; color: #BAE6FD; line-height: 1.6; text-align: left; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
-        💡 <strong>Windows SmartScreen Tip:</strong> When running on a fresh laptop, Windows Defender SmartScreen may show an unrecognized app prompt. Click <strong>"More info"</strong> &rarr; <strong>"Run anyway"</strong>. The installer is 100% self-contained (no Python or Node.js required) and registers trusted local TLS certificates automatically.
+      <!-- Visual SmartScreen Walkthrough Card -->
+      <div style="max-width: 860px; margin: 36px auto 0; padding: 26px 30px; border-radius: 16px; background: rgba(14, 9, 26, 0.95); border: 1px solid rgba(192, 132, 252, 0.4); box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 25px rgba(168, 85, 247, 0.25); text-align: left;">
+        <h4 style="color: var(--purple-neon); margin-bottom: 10px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          💡 Windows Defender SmartScreen: How to Run the Setup
+        </h4>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 20px; line-height: 1.6;">
+          Because this is a free open-source community project without an expensive corporate certificate, Windows SmartScreen will display an initial protection prompt on new laptops. To proceed, press <strong>Informations complémentaires</strong> (More info), then press <strong>Exécuter quand même</strong> (Run anyway):
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div style="text-align: center; background: rgba(8, 5, 16, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <p style="font-weight: 700; color: #FFFFFF; margin-bottom: 10px; font-size: 0.88rem;">1. Click "Informations complémentaires" (More info)</p>
+            <img src="images/smartscreen_step1_more_info.png" alt="SmartScreen Step 1" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-glow); box-shadow: 0 6px 20px rgba(0,0,0,0.5);">
+          </div>
+          <div style="text-align: center; background: rgba(8, 5, 16, 0.6); padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <p style="font-weight: 700; color: #FFFFFF; margin-bottom: 10px; font-size: 0.88rem;">2. Click "Exécuter quand même" (Run anyway)</p>
+            <img src="images/smartscreen_step2_run_anyway.png" alt="SmartScreen Step 2" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-glow); box-shadow: 0 6px 20px rgba(0,0,0,0.5);">
+          </div>
+        </div>
       </div>
     </section>
 
