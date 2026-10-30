@@ -8,13 +8,13 @@
 
   <!-- Core Add-in Metadata -->
   <Id>7F89B2E3-8E5A-4B21-996A-12E4A9F200A1</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.1.0</Version>
   <ProviderName>Google Antigravity</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Gemini Antigravity" />
   <Description DefaultValue="Gemini Antigravity Autonomous AI Assistant for Microsoft Office (Word, Excel, PowerPoint)" />
-  <IconUrl DefaultValue="https://localhost:18890/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:18890/assets/icon-80.png" />
+  <IconUrl DefaultValue="https://localhost:18890/assets/icon-gemini-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://localhost:18890/assets/icon-gemini-80.png" />
   <SupportUrl DefaultValue="https://localhost:18890/support" />
 
   <AppDomains>
@@ -148,9 +148,9 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:18890/assets/icon-16.png" />
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:18890/assets/icon-32.png" />
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:18890/assets/icon-80.png" />
+        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:18890/assets/icon-gemini-16.png" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:18890/assets/icon-gemini-32.png" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:18890/assets/icon-gemini-80.png" />
       </bt:Images>
       <bt:Urls>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:18890/index.html" />

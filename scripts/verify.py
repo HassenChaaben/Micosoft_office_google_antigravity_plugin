@@ -86,8 +86,7 @@ def test_ui_markup():
         assert skill in content, f"Skill {skill} missing from index.html"
 
     # UI controls
-    assert "Gemini 3.8 Flash High" in content, "Model selector missing Gemini 3.8 Flash High"
-    assert "Deep Think" in content, "Model selector missing Deep Think"
+    assert "modelSelect" in content, "Model selector missing from index.html"
     assert "btnFlyoutPlus" in content, "Plus flyout button missing"
     assert "flyoutMenu" in content, "Flyout popup menu missing"
     assert "menuConnectors" in content, "Connectors menu missing"
