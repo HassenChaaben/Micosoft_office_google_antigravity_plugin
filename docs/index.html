@@ -8,27 +8,24 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-void: #050508;
-      --bg-primary: #0A0713;
-      --bg-secondary: #120C22;
-      --bg-card: rgba(18, 12, 34, 0.75);
-      --bg-card-hover: rgba(28, 18, 52, 0.85);
-      --border-subtle: rgba(168, 85, 247, 0.18);
-      --border-glow: rgba(168, 85, 247, 0.45);
-      --border-bright: #A855F7;
-      --text-primary: #F8FAFC;
-      --text-secondary: #CBD5E1;
+      --bg-void: #040307;
+      --bg-primary: #08060F;
+      --bg-secondary: #0F0A1D;
+      --bg-card: rgba(16, 11, 30, 0.85);
+      --border-subtle: rgba(168, 85, 247, 0.22);
+      --border-glow: rgba(168, 85, 247, 0.55);
+      --border-bright: #C084FC;
+      --text-primary: #FFFFFF;
+      --text-secondary: #E2E8F0;
       --text-muted: #94A3B8;
       --purple-neon: #C084FC;
       --purple-core: #A855F7;
       --purple-deep: #7C3AED;
-      --purple-dark: #581C87;
-      --accent-emerald: #10B981;
-      --accent-amber: #F59E0B;
-      --accent-rose: #F43F5E;
+      --pink-neon: #F472B6;
+      --cyan-neon: #38BDF8;
     }
 
     * {
@@ -48,7 +45,7 @@
     }
 
     /* ==========================================================================
-       ANIMATED BACKGROUND LIGHTS & AURORAS
+       HYPER NEON BACKGROUND LIGHTS & AURORAS
        ========================================================================== */
     .lights-layer {
       position: fixed;
@@ -64,56 +61,56 @@
     .light-orb {
       position: absolute;
       border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.5;
-      animation: floatPulse 12s ease-in-out infinite alternate;
+      filter: blur(100px);
+      opacity: 0.6;
+      animation: floatPulse 10s ease-in-out infinite alternate;
     }
 
     .light-orb-1 {
-      top: -100px;
-      left: 20%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(124, 58, 237, 0.2) 60%, transparent 80%);
-      animation-duration: 14s;
+      top: -80px;
+      left: 15%;
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.55) 0%, rgba(124, 58, 237, 0.25) 50%, transparent 75%);
+      animation-duration: 12s;
     }
 
     .light-orb-2 {
-      top: 350px;
-      right: 10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(88, 28, 135, 0.15) 60%, transparent 80%);
-      animation-duration: 18s;
-      animation-delay: -4s;
+      top: 300px;
+      right: 5%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.45) 0%, rgba(168, 85, 247, 0.25) 55%, transparent 80%);
+      animation-duration: 15s;
+      animation-delay: -3s;
     }
 
     .light-orb-3 {
-      top: 1200px;
-      left: 15%;
-      width: 700px;
-      height: 700px;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, rgba(99, 102, 241, 0.15) 60%, transparent 80%);
-      animation-duration: 20s;
-      animation-delay: -8s;
+      top: 1100px;
+      left: 10%;
+      width: 750px;
+      height: 750px;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.4) 0%, rgba(56, 189, 248, 0.2) 60%, transparent 80%);
+      animation-duration: 18s;
+      animation-delay: -6s;
     }
 
     @keyframes floatPulse {
       0% {
         transform: translateY(0) scale(1);
-        opacity: 0.35;
+        opacity: 0.45;
       }
       50% {
-        transform: translateY(60px) scale(1.15);
-        opacity: 0.65;
+        transform: translateY(70px) scale(1.2);
+        opacity: 0.8;
       }
       100% {
-        transform: translateY(-40px) scale(0.95);
-        opacity: 0.45;
+        transform: translateY(-50px) scale(0.95);
+        opacity: 0.55;
       }
     }
 
-    /* Subtle grid overlay */
+    /* Animated Cyberpunk Grid */
     .bg-grid {
       position: fixed;
       top: 0;
@@ -121,15 +118,15 @@
       width: 100vw;
       height: 100vh;
       background-image: 
-        linear-gradient(to right, rgba(168, 85, 247, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
-      background-size: 48px 48px;
+        linear-gradient(to right, rgba(168, 85, 247, 0.08) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(168, 85, 247, 0.08) 1px, transparent 1px);
+      background-size: 52px 52px;
       pointer-events: none;
       z-index: 1;
     }
 
     /* ==========================================================================
-       ANIMATED BIRDS IN THE BACKGROUND
+       ANIMATED BIRDS FLOCK IN THE BACKGROUND
        ========================================================================== */
     .birds-sky {
       position: fixed;
@@ -144,80 +141,59 @@
 
     .bird-track {
       position: absolute;
-      top: 15%;
-      left: -120px;
-      animation: birdFly 22s linear infinite;
+      left: -150px;
+      filter: drop-shadow(0 0 10px #C084FC) drop-shadow(0 0 20px rgba(168, 85, 247, 0.8));
     }
 
-    .bird-track-2 {
-      top: 28%;
-      left: -120px;
-      animation: birdFly 28s linear infinite 7s;
-      transform: scale(0.7);
-      opacity: 0.65;
-    }
-
-    .bird-track-3 {
-      top: 42%;
-      left: -120px;
-      animation: birdFly 34s linear infinite 14s;
-      transform: scale(0.5);
-      opacity: 0.45;
-    }
-
-    .bird-track-4 {
-      top: 20%;
-      left: -120px;
-      animation: birdFly 25s linear infinite 18s;
-      transform: scale(0.65);
-      opacity: 0.55;
-    }
+    .b1 { top: 12%; animation: birdFlight 20s linear infinite; transform: scale(0.9); }
+    .b2 { top: 18%; animation: birdFlight 24s linear infinite 3s; transform: scale(0.75); opacity: 0.85; }
+    .b3 { top: 14%; animation: birdFlight 22s linear infinite 5s; transform: scale(0.8); opacity: 0.9; }
+    .b4 { top: 32%; animation: birdFlight 28s linear infinite 9s; transform: scale(0.65); opacity: 0.75; }
+    .b5 { top: 36%; animation: birdFlight 30s linear infinite 12s; transform: scale(0.55); opacity: 0.65; }
+    .b6 { top: 25%; animation: birdFlight 21s linear infinite 15s; transform: scale(0.85); opacity: 0.85; }
+    .b7 { top: 48%; animation: birdFlight 32s linear infinite 18s; transform: scale(0.5); opacity: 0.55; }
 
     .bird-svg {
-      width: 48px;
-      height: 48px;
-      animation: birdBob 2.5s ease-in-out infinite alternate;
+      width: 52px;
+      height: 52px;
+      animation: birdBob 2s ease-in-out infinite alternate;
     }
 
     .wing-left {
-      transform-origin: 24px 24px;
-      animation: flapLeft 0.45s ease-in-out infinite alternate;
+      transform-origin: 26px 26px;
+      animation: flapLeft 0.4s ease-in-out infinite alternate;
     }
 
     .wing-right {
-      transform-origin: 24px 24px;
-      animation: flapRight 0.45s ease-in-out infinite alternate;
+      transform-origin: 26px 26px;
+      animation: flapRight 0.4s ease-in-out infinite alternate;
     }
 
-    @keyframes birdFly {
-      0% {
-        transform: translateX(-150px);
-      }
-      100% {
-        transform: translateX(calc(100vw + 200px));
-      }
+    @keyframes birdFlight {
+      0% { transform: translateX(-160px); }
+      100% { transform: translateX(calc(100vw + 240px)); }
     }
 
     @keyframes birdBob {
-      0% { transform: translateY(-12px); }
+      0% { transform: translateY(-16px); }
       100% { transform: translateY(18px); }
     }
 
     @keyframes flapLeft {
-      0% { transform: rotate(-28deg); }
-      100% { transform: rotate(32deg); }
+      0% { transform: rotate(-32deg); }
+      100% { transform: rotate(38deg); }
     }
 
     @keyframes flapRight {
-      0% { transform: rotate(28deg); }
-      100% { transform: rotate(-32deg); }
+      0% { transform: rotate(32deg); }
+      100% { transform: rotate(-38deg); }
     }
 
     /* ==========================================================================
-       CONTAINER & NAVBAR
+       CONTAINER & HEADER NAVBAR
        ========================================================================== */
     .container {
-      max-width: 1200px;
+      max-width: 1240px;
       margin: 0 auto;
       padding: 0 24px;
       position: relative;
@@ -225,19 +201,21 @@
     }
 
     header {
-      border-bottom: 1px solid var(--border-subtle);
-      background: rgba(8, 6, 15, 0.85);
-      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-glow);
+      background: rgba(8, 5, 16, 0.88);
+      backdrop-filter: blur(24px);
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(168, 85, 247, 0.15);
     }
 
     .navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 76px;
+      height: 80px;
+      gap: 20px;
     }
 
     .nav-brand {
@@ -245,92 +223,112 @@
       align-items: center;
       gap: 14px;
       text-decoration: none;
-      color: var(--text-primary);
+      color: #FFFFFF;
       font-weight: 700;
-      font-size: 0.98rem;
+      font-size: 0.92rem;
       letter-spacing: -0.01em;
-      transition: opacity 0.2s ease;
+      flex-shrink: 0;
     }
 
-    .nav-brand:hover {
-      opacity: 0.9;
+    /* HIGH-CONTRAST LUMINOUS BADGE FOR THE ORIGINAL BLACK LOGO */
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: radial-gradient(circle, #FFFFFF 0%, #F1F5F9 75%, #E2E8F0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 
+        0 0 15px rgba(192, 132, 252, 0.8),
+        0 0 30px rgba(168, 85, 247, 0.5),
+        inset 0 1px 2px #FFFFFF;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
     }
 
-    .nav-brand img {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: #000000;
-      border: 1px solid var(--border-glow);
-      box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
-      padding: 4px;
+    .logo-badge:hover {
+      transform: scale(1.1) rotate(4deg);
+      box-shadow: 
+        0 0 25px rgba(192, 132, 252, 1),
+        0 0 50px rgba(168, 85, 247, 0.7);
+    }
+
+    .logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .brand-title-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 28px;
+      gap: 22px;
       list-style: none;
+      flex-shrink: 1;
     }
 
     .nav-links a {
       color: var(--text-muted);
       text-decoration: none;
       font-size: 0.88rem;
-      font-weight: 500;
+      font-weight: 600;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .nav-links a:hover {
       color: var(--purple-neon);
-      text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+      text-shadow: 0 0 12px rgba(192, 132, 252, 0.9);
     }
 
-    .btn {
+    /* DOWNLOAD BUTTON - FIXED VERTICAL ALIGNMENT & COMPACT NO-WRAP */
+    .btn-nav-download {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 22px;
+      justify-content: center;
+      gap: 8px;
+      height: 42px;
+      padding: 0 20px;
       border-radius: 10px;
-      font-size: 0.875rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       text-decoration: none;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      cursor: pointer;
-    }
-
-    .btn-neon {
+      white-space: nowrap;
+      flex-shrink: 0;
       background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
       color: #FFFFFF;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 24px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 
+        0 0 20px rgba(168, 85, 247, 0.6),
+        0 0 40px rgba(124, 58, 237, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .btn-neon:hover {
+    .btn-nav-download:hover {
       background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%);
-      box-shadow: 0 0 36px rgba(192, 132, 252, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-ghost {
-      background: rgba(18, 12, 34, 0.8);
-      color: var(--text-primary);
-      border: 1px solid var(--border-subtle);
-      backdrop-filter: blur(12px);
-    }
-
-    .btn-ghost:hover {
-      background: rgba(28, 18, 52, 0.9);
-      border-color: var(--purple-core);
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+      box-shadow: 
+        0 0 35px rgba(192, 132, 252, 0.9),
+        0 0 65px rgba(168, 85, 247, 0.7);
       transform: translateY(-2px);
     }
 
     /* ==========================================================================
-       HERO SECTION
+       HERO SECTION WITH SHIMMERING TITLE & NEON CARD
        ========================================================================== */
     .hero {
-      padding: 88px 0 64px;
+      padding: 84px 0 60px;
       text-align: center;
       position: relative;
     }
@@ -339,67 +337,92 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 7px 18px;
+      padding: 8px 20px;
       border-radius: 9999px;
-      background: rgba(168, 85, 247, 0.1);
-      border: 1px solid rgba(168, 85, 247, 0.35);
+      background: rgba(168, 85, 247, 0.14);
+      border: 1px solid rgba(192, 132, 252, 0.45);
       color: var(--purple-neon);
-      font-size: 0.825rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       margin-bottom: 24px;
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.35);
+      backdrop-filter: blur(12px);
     }
 
     .hero-badge .pulse-light {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      background: #A855F7;
-      box-shadow: 0 0 10px #A855F7;
-      animation: beacon 1.8s infinite;
+      background: #C084FC;
+      box-shadow: 0 0 14px #C084FC, 0 0 24px #A855F7;
+      animation: beacon 1.4s infinite alternate;
     }
 
     @keyframes beacon {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+      0% { opacity: 0.4; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.3); }
     }
 
+    /* SHIMMERING RAINBOW-PURPLE METALLIC TITLE */
     .hero h1 {
-      font-size: 2.85rem;
+      font-size: 3rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.18;
+      line-height: 1.15;
       margin-bottom: 16px;
       word-break: break-word;
-      background: linear-gradient(180deg, #FFFFFF 0%, #E9D5FF 50%, #A855F7 100%);
+      background: linear-gradient(90deg, #FFFFFF 0%, #E9D5FF 20%, #C084FC 40%, #F472B6 60%, #A855F7 80%, #FFFFFF 100%);
+      background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+      animation: textGlow 6s linear infinite;
+      filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.45));
+    }
+
+    @keyframes textGlow {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
     }
 
     .hero-subtitle {
       font-size: 1.35rem;
       font-weight: 600;
       color: var(--purple-neon);
-      margin-bottom: 28px;
+      margin-bottom: 32px;
       letter-spacing: -0.01em;
+      text-shadow: 0 0 20px rgba(192, 132, 252, 0.5);
+    }
+
+    /* ROTATING CONIC NEON BORDER STORY CARD */
+    .neon-story-wrapper {
+      position: relative;
+      max-width: 860px;
+      margin: 0 auto 36px;
+      border-radius: 18px;
+      padding: 2px;
+      background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(244, 114, 182, 0.6), rgba(56, 189, 248, 0.6), rgba(168, 85, 247, 0.8));
+      background-size: 300% 300%;
+      animation: borderShift 7s ease infinite;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(168, 85, 247, 0.35);
+    }
+
+    @keyframes borderShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .hero-story-card {
-      max-width: 820px;
-      margin: 0 auto 36px;
-      padding: 24px 28px;
-      background: rgba(18, 12, 34, 0.7);
-      border: 1px solid var(--border-glow);
+      background: rgba(14, 9, 26, 0.95);
       border-radius: 16px;
-      backdrop-filter: blur(16px);
+      padding: 26px 32px;
+      backdrop-filter: blur(20px);
       text-align: left;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(168, 85, 247, 0.15);
     }
 
     .hero-story-card p {
       color: var(--text-secondary);
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       line-height: 1.7;
       margin-bottom: 14px;
     }
@@ -410,19 +433,21 @@
 
     .hero-story-card strong {
       color: #FFFFFF;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     .hobby-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 6px;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.45);
       color: #FBBF24;
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
     }
 
     .hero-actions {
@@ -432,51 +457,130 @@
       flex-wrap: wrap;
     }
 
+    .btn-main-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 48px;
+      padding: 0 28px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      background: linear-gradient(135deg, #C084FC 0%, #9333EA 50%, #7C3AED 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 
+        0 0 25px rgba(192, 132, 252, 0.7),
+        0 0 50px rgba(168, 85, 247, 0.45);
+      transition: all 0.25s ease;
+    }
+
+    .btn-main-download:hover {
+      box-shadow: 
+        0 0 40px rgba(192, 132, 252, 1),
+        0 0 75px rgba(168, 85, 247, 0.7);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .btn-main-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 48px;
+      padding: 0 24px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(18, 12, 34, 0.85);
+      color: #FFFFFF;
+      border: 1px solid var(--border-glow);
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+
+    .btn-main-github:hover {
+      border-color: var(--purple-neon);
+      box-shadow: 0 0 25px rgba(192, 132, 252, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* NEON LASER DIVIDER */
+    .neon-laser {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(168, 85, 247, 0.3) 15%, #C084FC 50%, rgba(168, 85, 247, 0.3) 85%, transparent 100%);
+      position: relative;
+      margin: 56px 0;
+      box-shadow: 0 0 15px rgba(192, 132, 252, 0.6);
+    }
+
+    .neon-laser::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 0;
+      width: 120px;
+      height: 4px;
+      background: #FFFFFF;
+      box-shadow: 0 0 20px #FFFFFF, 0 0 35px #C084FC;
+      border-radius: 4px;
+      animation: laserSweep 5s ease-in-out infinite;
+    }
+
+    @keyframes laserSweep {
+      0% { left: -10%; }
+      100% { left: 105%; }
+    }
+
     /* ==========================================================================
-       SHOWCASE & CARDS
+       SHOWCASE & EVIDENCE CARDS
        ========================================================================== */
     .section-header {
       text-align: center;
-      margin: 72px 0 44px;
+      margin-bottom: 40px;
     }
 
     .section-header h2 {
-      font-size: 2.1rem;
-      font-weight: 700;
+      font-size: 2.2rem;
+      font-weight: 800;
       letter-spacing: -0.02em;
       margin-bottom: 12px;
-      background: linear-gradient(180deg, #FFFFFF 0%, #D8B4FE 100%);
+      background: linear-gradient(180deg, #FFFFFF 0%, #E9D5FF 60%, #C084FC 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
     }
 
     .section-header p {
       color: var(--text-muted);
       font-size: 1.05rem;
-      max-width: 660px;
+      max-width: 680px;
       margin: 0 auto;
     }
 
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
+      gap: 28px;
     }
 
     .gallery-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      position: relative;
     }
 
     .gallery-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--border-bright);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(168, 85, 247, 0.35);
+      transform: translateY(-6px);
+      border-color: var(--purple-neon);
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.7), 0 0 35px rgba(168, 85, 247, 0.45);
     }
 
     .gallery-card img {
@@ -487,18 +591,18 @@
     }
 
     .gallery-card-body {
-      padding: 22px;
+      padding: 22px 24px;
     }
 
     .gallery-card-body h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.15rem;
+      font-weight: 700;
       margin-bottom: 8px;
       color: #FFFFFF;
     }
 
     .gallery-card-body p {
-      font-size: 0.885rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
       line-height: 1.55;
     }
@@ -506,10 +610,6 @@
     /* ==========================================================================
        CAPABILITIES MATRIX & LEGEND
        ========================================================================== */
-    .matrix-section {
-      padding: 32px 0 64px;
-    }
-
     .legend-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -522,13 +622,14 @@
       border: 1px solid var(--border-subtle);
       border-radius: 12px;
       padding: 16px 18px;
-      backdrop-filter: blur(12px);
-      transition: all 0.2s ease;
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
     }
 
     .legend-card:hover {
       border-color: var(--purple-core);
-      box-shadow: 0 0 18px rgba(168, 85, 247, 0.25);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.35);
+      transform: translateY(-2px);
     }
 
     .legend-title {
@@ -552,10 +653,10 @@
       border-spacing: 0;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
       backdrop-filter: blur(16px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     }
 
     .matrix-table th {
@@ -579,7 +680,7 @@
     }
 
     .matrix-table tr:hover td {
-      background: rgba(168, 85, 247, 0.04);
+      background: rgba(168, 85, 247, 0.06);
     }
 
     .matrix-table tr:last-child td {
@@ -594,7 +695,7 @@
 
     .matrix-table a:hover {
       text-decoration: underline;
-      text-shadow: 0 0 8px rgba(192, 132, 252, 0.7);
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.8);
     }
 
     .badge-status {
@@ -610,27 +711,31 @@
     }
 
     .badge-prod {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.18);
       color: #34D399;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
     }
 
     .badge-partial {
-      background: rgba(245, 158, 11, 0.15);
+      background: rgba(245, 158, 11, 0.18);
       color: #FBBF24;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
     }
 
     .badge-stub {
-      background: rgba(168, 85, 247, 0.15);
+      background: rgba(168, 85, 247, 0.18);
       color: #C084FC;
-      border: 1px solid rgba(168, 85, 247, 0.4);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
     }
 
     .badge-unsupported {
-      background: rgba(244, 63, 94, 0.15);
+      background: rgba(244, 63, 94, 0.18);
       color: #FB7185;
-      border: 1px solid rgba(244, 63, 94, 0.4);
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.3);
     }
 
     /* ==========================================================================
@@ -645,32 +750,33 @@
     .step-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 28px 24px;
       backdrop-filter: blur(14px);
       transition: all 0.25s ease;
     }
 
     .step-card:hover {
-      border-color: var(--purple-core);
-      box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-      transform: translateY(-2px);
+      border-color: var(--purple-neon);
+      box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+      transform: translateY(-3px);
     }
 
     .step-num {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      background: rgba(168, 85, 247, 0.15);
+      background: rgba(168, 85, 247, 0.2);
       border: 1px solid var(--border-glow);
       color: var(--purple-neon);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 0.95rem;
       margin-bottom: 16px;
       font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
     }
 
     .step-card h3 {
@@ -680,22 +786,22 @@
     }
 
     .step-card p {
-      font-size: 0.885rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
       line-height: 1.55;
     }
 
     pre {
-      background: #08060F;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 14px 18px;
+      background: #06040A;
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 16px 20px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.84rem;
+      font-size: 0.86rem;
       color: #E9D5FF;
       overflow-x: auto;
       margin-top: 14px;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.2);
     }
 
     /* ==========================================================================
@@ -703,11 +809,11 @@
        ========================================================================== */
     footer {
       border-top: 1px solid var(--border-subtle);
-      padding: 56px 0;
+      padding: 60px 0;
       text-align: center;
       color: var(--text-muted);
-      font-size: 0.875rem;
-      background: rgba(5, 5, 8, 0.95);
+      font-size: 0.885rem;
+      background: rgba(4, 3, 7, 0.98);
       position: relative;
       z-index: 10;
     }
@@ -720,9 +826,10 @@
 
     footer a:hover {
       text-decoration: underline;
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.8);
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 960px) {
       .hero h1 { font-size: 2.2rem; }
       .gallery-grid, .steps-grid, .legend-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
@@ -730,72 +837,99 @@
   </style>
 </head>
 <body>
-  <!-- Animated Background Lights -->
+  <!-- Hyper Neon Background Lights -->
   <div class="lights-layer">
     <div class="light-orb light-orb-1"></div>
     <div class="light-orb light-orb-2"></div>
     <div class="light-orb light-orb-3"></div>
   </div>
 
-  <!-- Cosmic Grid -->
+  <!-- Animated Cyberpunk Grid -->
   <div class="bg-grid"></div>
 
   <!-- Animated Flying Birds in the Background Sky -->
   <div class="birds-sky">
-    <!-- Bird 1 -->
-    <div class="bird-track">
+    <!-- Bird 1 (Leader) -->
+    <div class="bird-track b1">
       <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
-        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#C084FC" fill-opacity="0.85"/>
-        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#A855F7" fill-opacity="0.75"/>
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#E9D5FF"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#C084FC"/>
         <circle cx="32" cy="32" r="3" fill="#FFFFFF"/>
       </svg>
     </div>
-
     <!-- Bird 2 -->
-    <div class="bird-track-2">
+    <div class="bird-track b2">
       <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
-        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#E9D5FF" fill-opacity="0.7"/>
-        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#C084FC" fill-opacity="0.6"/>
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#C084FC"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#A855F7"/>
         <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
       </svg>
     </div>
-
     <!-- Bird 3 -->
-    <div class="bird-track-3">
+    <div class="bird-track b3">
       <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
-        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#A855F7" fill-opacity="0.5"/>
-        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#7C3AED" fill-opacity="0.45"/>
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#F472B6"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#C084FC"/>
+        <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
+      </svg>
+    </div>
+    <!-- Bird 4 -->
+    <div class="bird-track b4">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#A855F7"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#7C3AED"/>
         <circle cx="32" cy="32" r="2" fill="#FFFFFF"/>
       </svg>
     </div>
-
-    <!-- Bird 4 -->
-    <div class="bird-track-4">
+    <!-- Bird 5 -->
+    <div class="bird-track b5">
       <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
-        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#C084FC" fill-opacity="0.65"/>
-        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#9333EA" fill-opacity="0.55"/>
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#38BDF8"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#818CF8"/>
+        <circle cx="32" cy="32" r="2" fill="#FFFFFF"/>
+      </svg>
+    </div>
+    <!-- Bird 6 -->
+    <div class="bird-track b6">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#E9D5FF"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#C084FC"/>
         <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
+      </svg>
+    </div>
+    <!-- Bird 7 -->
+    <div class="bird-track b7">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C22 14 10 16 2 24 C14 26 26 30 32 32 Z" fill="#C084FC"/>
+        <path class="wing-right" d="M32 32 C42 14 54 16 62 24 C50 26 38 30 32 32 Z" fill="#A855F7"/>
+        <circle cx="32" cy="32" r="2" fill="#FFFFFF"/>
       </svg>
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- Header Navbar -->
   <header>
     <div class="container navbar">
       <a href="#" class="nav-brand">
-        <img src="icon-black.png" alt="Black Logo">
-        <span>Micosoft_office_google_antigravity_plugin</span>
+        <!-- High-Contrast Luminous Badge for Black Logo -->
+        <div class="logo-badge">
+          <img src="icon-black.png" alt="Black Logo">
+        </div>
+        <span class="brand-title-text">Micosoft_office_google_antigravity_plugin</span>
       </a>
+
       <ul class="nav-links">
-        <li><a href="#problematic">Inspiration</a></li>
+        <li><a href="#inspiration">Inspiration</a></li>
         <li><a href="#showcase">Evidence</a></li>
-        <li><a href="#capabilities">Matrix & Issues</a></li>
+        <li><a href="#matrix">Matrix & Issues</a></li>
         <li><a href="#install">Installation</a></li>
         <li><a href="#contributing">Contributing (dev)</a></li>
         <li><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" target="_blank">GitHub</a></li>
       </ul>
-      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-neon" target="_blank">
-        Download v1.0.0 Setup
+
+      <!-- Compact, Horizontally Centered, No-Wrap Download Button -->
+      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn-nav-download" target="_blank">
+        ⬇️ Download Setup
       </a>
     </div>
   </header>
@@ -813,32 +947,37 @@
         An Autonomous AI Copilot for Microsoft Office connected with Antigravity
       </p>
 
-      <!-- The Problematic & Inspiration Narrative Card -->
-      <div id="problematic" class="hero-story-card">
-        <p>
-          <strong>The Problematic:</strong> Standard office AI add-ins function merely as isolated sidebar chat windows—they generate markdown text, leaving the user to copy, paste, re-format tables, fix broken numbering, and assemble documents manually. They cannot perceive active document outlines, rewrite paragraphs in place without phantom duplications, or construct publication-grade tables natively.
-        </p>
-        <p>
-          <strong>The Inspiration:</strong> This project was directly inspired by <strong>Claude's deep desktop and workspace integration into office tools</strong>, where models don't just chat—they execute autonomous tools, parse document geometries, and apply changes directly onto the active workspace.
-        </p>
-        <p>
-          <span class="hobby-tag">🎨 Open-Source Hobby Scope</span>
-          This software is developed strictly as a <strong>personal open-source hobby and engineering exploration</strong>. It is <strong>NOT built for commercial uses</strong> or enterprise resale, but as an open research playground for the developer community.
-        </p>
+      <!-- The Problematic & Inspiration Narrative Card (Glowing Conic Neon Frame) -->
+      <div id="inspiration" class="neon-story-wrapper">
+        <div class="hero-story-card">
+          <p>
+            <strong>The Problematic:</strong> Standard office AI add-ins function merely as isolated sidebar chat windows—they generate markdown text, leaving the user to copy, paste, re-format tables, fix broken numbering, and assemble documents manually. They cannot perceive active document outlines, rewrite paragraphs in place without phantom duplications, or construct publication-grade tables natively.
+          </p>
+          <p>
+            <strong>The Inspiration:</strong> This project was directly inspired by <strong>Claude's deep desktop and workspace integration into office tools</strong>, where models don't just chat—they execute autonomous tools, parse document geometries, and apply changes directly onto the active workspace.
+          </p>
+          <p>
+            <span class="hobby-tag">🎨 Open-Source Hobby Scope</span>
+            This software is developed strictly as a <strong>personal open-source hobby and engineering exploration</strong>. It is <strong>NOT built for commercial uses</strong> or enterprise resale, but as an open research playground for the developer community.
+          </p>
+        </div>
       </div>
 
       <div class="hero-actions">
-        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-neon" target="_blank">
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn-main-download" target="_blank">
           ⬇️ Download Standalone Installer (.exe)
         </a>
-        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn btn-ghost" target="_blank">
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn-main-github" target="_blank">
           View on GitHub (Stars & Forks Welcome)
         </a>
       </div>
     </section>
 
+    <!-- Animated Neon Laser Sweep -->
+    <div class="neon-laser"></div>
+
     <!-- Visual Evidence Showcase -->
-    <section id="showcase" class="showcase">
+    <section id="showcase">
       <div class="section-header">
         <h2>Production Evidence in Microsoft Word</h2>
         <p>Real captures of the agent autonomously assembling an executive technical dossier (<em>"Progetto di Automazione e Monitoraggio Esecutivo"</em>).</p>
@@ -879,8 +1018,11 @@
       </div>
     </section>
 
+    <!-- Animated Neon Laser Sweep -->
+    <div class="neon-laser"></div>
+
     <!-- Capabilities Matrix & Legend -->
-    <section id="capabilities" class="matrix-section">
+    <section id="matrix" class="matrix-section">
       <div class="section-header">
         <h2>Engineering Capabilities & Reality Matrix</h2>
         <p>Explicit transparency on current production features versus in-progress modules tracked in GitHub issues.</p>
@@ -1000,6 +1142,9 @@
       </table>
     </section>
 
+    <!-- Animated Neon Laser Sweep -->
+    <div class="neon-laser"></div>
+
     <!-- Installation & Setup -->
     <section id="install" class="matrix-section">
       <div class="section-header">
@@ -1033,7 +1178,7 @@
         <p>This is a community hobby project. All Pull Requests must target the <strong><code>dev</code></strong> branch.</p>
       </div>
 
-      <div class="step-card" style="max-width: 820px; margin: 0 auto;">
+      <div class="step-card" style="max-width: 840px; margin: 0 auto;">
         <h3>🌿 Two-Tier Git Branching Model</h3>
         <p style="margin-bottom: 12px; color: var(--text-secondary);">
           Branch off <strong><code>dev</code></strong> for features and bugfixes. Maintainers merge <strong><code>dev</code></strong> into <strong><code>main</code></strong> for official releases:
