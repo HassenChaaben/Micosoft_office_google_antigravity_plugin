@@ -21,7 +21,7 @@
 > 📦 **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
 
 > [!NOTE]
-> **Current Scope & Community Contributions**: Gemini Antigravity currently focuses on and is production-tested for **Microsoft Office (Word)** on Windows. We are actively waiting for and warmly welcoming **community contributions** to expand native automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform support for **macOS**! Check out the [Zero-Fluff Matrix](#-exact-capabilities--what-is-missing-zero-fluff-matrix) and open a PR.
+> **Current Scope & Community Contributions**: Gemini Antigravity currently focuses on and is production-tested for **Microsoft Office (Word)** on Windows. We are actively waiting for and warmly welcoming **community contributions** to expand native automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform support for **macOS**! Check out the [Zero-Fluff Matrix](#-exact-capabilities--what-is-missing-zero-fluff-matrix) and open a PR against the `dev` branch.
 
 ---
 
@@ -196,11 +196,28 @@ We welcome pull requests for:
 - 🎨 **PowerPoint Slide Automation**: Richer slide layouts and visual themes.
 - 🍎 **macOS & Web Office.js Compatibility**: Expanding pure Office.js fallback tools for cross-platform support.
 
-### How to Contribute
-1. Fork the repository: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin).
-2. Create a feature branch: `git checkout -b feat/my-new-feature`.
-3. Commit your changes: `git commit -m "feat: add support for custom chart themes"`.
-4. Push to your fork and submit a **Pull Request**.
+### 🌿 Git Branching Model & PR Workflow
+To maintain release stability, we follow a strict two-tier branch workflow:
+- **`dev` (Development Branch)**: The active development and staging branch where all new features, enhancements, and fixes are tested. **All contributor Pull Requests MUST target the `dev` branch**.
+- **`main` (Production Branch)**: Stable, production-ready releases. Maintainers periodically merge `dev` into `main` to publish official installer builds.
+
+### 🚀 How to Contribute
+1. **Fork the repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)
+2. **Branch from `dev`**: Always create your feature branch from `dev`:
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feat/my-new-feature
+   ```
+3. **Commit your changes**: Use clear, conventional commit messages:
+   ```bash
+   git commit -m "feat: add support for custom chart themes"
+   ```
+4. **Push to your fork**:
+   ```bash
+   git push -u origin feat/my-new-feature
+   ```
+5. **Submit a Pull Request to `dev`**: Select `base: dev` in the GitHub PR comparison screen. Once reviewed, tested, and approved, your PR will be merged into `dev`, and finally merged into `main` in the next official release!
 
 ---
 
