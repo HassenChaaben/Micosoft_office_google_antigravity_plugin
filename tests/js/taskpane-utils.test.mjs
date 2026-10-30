@@ -96,6 +96,10 @@ test('humanToolLabel formats tools for user display', () => {
     humanToolLabel('word_delete_row', { table_index: 1, row_index: 3 }),
     'Deleting row #3 from table #1...'
   );
+  assert.equal(
+    humanToolLabel('word_generate_image', { prompt: 'modern server room with neon lights' }),
+    'Generating AI image with Gemini Imagen 3 ("modern server room with neon l...")...'
+  );
 });
 
 test('formatFamilyLabel formats model families with display names', () => {

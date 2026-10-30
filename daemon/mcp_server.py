@@ -12,7 +12,9 @@ import time
 import uuid
 from .word_tools import get_tool_definitions, get_tool
 from .agent_session import agent_session
-from .office.word_com_tools import TOOLS as COM_TOOLS
+from .office.word_com_tools import TOOLS as BASE_COM_TOOLS, EXTRA_TOOLS
+
+COM_TOOLS = {**BASE_COM_TOOLS, **EXTRA_TOOLS}
 
 router = APIRouter()
 
@@ -186,6 +188,17 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
         return {"ok": True, "memories": [{"text": m["text"], "scope": m["scope"]} for m in found]}
 
     if name in COM_TOOL_NAMES:
+        # If word_insert_image is called with a keyword, URL, or base64 (not a local file path),
+        # dispatch directly to agent_session (Office.js in Word taskpane)
+        if name == "word_insert_image":
+            src = str(args.get("source") or args.get("file_path") or "")
+            if not os.path.exists(src) and agent_session.is_active():
+                res = await agent_session.call_tool(name, args)
+                if res.get("ok"):
+                    agent_session.invalidate_perception_cache()
+                    await agent_session.refresh_perception(doc_url)
+                return res
+
         worker = agent_session.com_worker
         tool_entry = COM_TOOLS[name]
         fn = tool_entry["fn"]
@@ -283,8 +296,21 @@ async def run_daemon_tool(name: str, args: dict) -> dict:
 
         res = await worker.run(_execute_com)
 
-        agent_session._current_turn_tools.append(f"{name}({json.dumps(args)})")
-        agent_session._record_tool(name, args, res, started)
+        used_call_tool = False
+        # COM Fallback: If COM failed (e.g. document unsaved Document1 or COM busy) and taskpane is active,
+        # fallback to execute the tool directly via Office.js in the taskpane
+        if not res.get("ok") and agent_session.is_active():
+            try:
+                taskpane_res = await agent_session.call_tool(name, args)
+                if isinstance(taskpane_res, dict) and taskpane_res.get("ok"):
+                    res = taskpane_res
+                    used_call_tool = True
+            except Exception:
+                pass
+
+        if not used_call_tool:
+            agent_session._current_turn_tools.append(f"{name}({json.dumps(args)})")
+            agent_session._record_tool(name, args, res, started)
 
         if res.get("ok"):
             agent_session.invalidate_perception_cache()

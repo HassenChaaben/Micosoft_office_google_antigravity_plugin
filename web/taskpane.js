@@ -174,6 +174,7 @@
       case 'word_insert_list': return `Inserting ${args.items ? args.items.length : 0} ${args.list_type || 'bullet'} items...`;
       case 'word_insert_table': return `Inserting native Word table (${args.headers ? args.headers.join(', ') : 'table'})...`;
       case 'word_insert_image': return `Inserting picture (${args.caption ? args.caption : (args.source || 'visual')})...`;
+      case 'word_generate_image': return `Generating AI image with Gemini Imagen 3 ("${(args.prompt || '').slice(0, 30)}...")...`;
       case 'word_format_table': return `Formatting table #${args.table_index} (${args.style || 'default'})...`;
       case 'word_set_table_cell': return `Updating table cell [${args.row_index}, ${args.col_index}]: "${args.text}"`;
       case 'word_add_table_row': return `Adding row to table #${args.table_index}...`;
@@ -2320,9 +2321,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const statusSpan = document.getElementById('apiKeyStatus');
       if (statusSpan) {
         if (data.has_key) {
-          statusSpan.textContent = `✓ Key active (${data.preview})`;
+          statusSpan.textContent = `✓ Key active (${data.preview}) — Gemini Imagen 3: Active`;
         } else {
-          statusSpan.textContent = 'Using Subscription Bridge & local engine';
+          statusSpan.textContent = 'Using Subscription Bridge (Gemini Imagen 3: inactive without API key)';
         }
       }
     } catch (e) {}
@@ -2345,7 +2346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         const data = await res.json();
         if (apiKeyStatus) {
-          apiKeyStatus.textContent = data.has_key ? '✓ Gemini API Key saved!' : 'Key removed';
+          apiKeyStatus.textContent = data.has_key ? '✓ Gemini API Key saved! Gemini Imagen 3: Active' : 'Key removed (Gemini Imagen 3: inactive)';
         }
         inputApiKey.value = '';
       } catch (e) {

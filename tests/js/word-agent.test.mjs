@@ -48,7 +48,12 @@ function createMockWordContext() {
       items: []
     },
     insertInlinePictureFromBase64(b64, loc) {
-      const pic = { width: 0, height: 0, select: () => {} };
+      const pic = {
+        width: 0,
+        height: 0,
+        select: () => {},
+        insertParagraph: (text, loc) => body.insertParagraph(text, loc)
+      };
       body.inlinePictures.items.push(pic);
       return pic;
     },
@@ -400,6 +405,35 @@ test('wordAgent.formatText supports centering alignment and font styling', async
   assert.equal(paragraphs[1].font.size, 14);
   assert.equal(paragraphs[1].font.bold, false);
 });
+
+test('wordAgent.insertImage dispatches word_insert_diagram and word_insert_chart seamlessly', async () => {
+  const { Word, body, paragraphs } = createMockWordContext();
+  const sandbox = { window: {}, console, Word };
+  vm.createContext(sandbox);
+  vm.runInContext(scriptCode, sandbox);
+
+  // 1. Diagram test
+  const diagRes = await sandbox.window.wordAgent.executeTool('word_insert_diagram', {
+    kind: 'quantum circuit',
+    title: 'Circuito Quantistico Stato di Bell',
+    caption: 'Figura 1 - Circuito logico quantistico per la generazione dello stato di Bell'
+  });
+  assert.equal(diagRes.ok, true);
+  assert.equal(diagRes.image_inserted, true);
+  assert.equal(body.inlinePictures.items.length, 1);
+  assert.equal(paragraphs[paragraphs.length - 1].text, 'Figura 1 - Circuito logico quantistico per la generazione dello stato di Bell');
+
+  // 2. Chart test
+  const chartRes = await sandbox.window.wordAgent.executeTool('word_insert_chart', {
+    title: 'Analisi Budget e Fasi Tabella 2',
+    caption: 'Figura 2 - Grafico comparativo delle fasi'
+  });
+  assert.equal(chartRes.ok, true);
+  assert.equal(chartRes.image_inserted, true);
+  assert.equal(body.inlinePictures.items.length, 2);
+  assert.equal(paragraphs[paragraphs.length - 1].text, 'Figura 2 - Grafico comparativo delle fasi');
+});
+
 
 
 

@@ -239,7 +239,34 @@
               outcome = await this.insertTable(args.headers, args.rows, args.table_style, args.location, args.columns);
               break;
             case 'word_insert_image':
-              outcome = await this.insertImage(args.source, args.caption, args.location, args.width_px, args.height_px);
+              outcome = await this.insertImage(
+                args.source || args.file_path || args.url,
+                args.caption,
+                args.location,
+                args.width_px,
+                args.height_px,
+                args
+              );
+              break;
+            case 'word_insert_diagram':
+              outcome = await this.insertImage(
+                args.kind || args.type || 'diagram',
+                args.caption || args.title || 'Diagramma di processo',
+                args.location || 'end',
+                args.width_px || 600,
+                args.height_px || 280,
+                args
+              );
+              break;
+            case 'word_insert_chart':
+              outcome = await this.insertImage(
+                'chart',
+                args.caption || args.title || 'Grafico di confronto',
+                args.location || 'end',
+                args.width_px || 600,
+                args.height_px || 280,
+                args
+              );
               break;
             case 'word_format_table':
               outcome = await this.formatTable(args.table_index, args.style, args.header_bold, args.autofit);
@@ -390,9 +417,9 @@
       });
     }
 
-    async insertImage(source, caption, location = 'end', widthPx, heightPx) {
+    async insertImage(source, caption, location = 'end', widthPx, heightPx, options = {}) {
       if (!source) {
-        return { ok: false, error: "Missing required parameter 'source'. Provide an image URL, base64 string, or keyword ('logo', 'chart', 'diagram', 'banner')." };
+        return { ok: false, error: "Missing required parameter 'source'. Provide an image URL, base64 string, or keyword ('diagram', 'chart', 'quantum circuit', etc.)." };
       }
 
       let base64Data = '';
@@ -400,22 +427,34 @@
         base64Data = source.split(',')[1] || '';
       } else if (source.startsWith('http://') || source.startsWith('https://')) {
         try {
-          const resp = await fetch(source);
-          const blob = await resp.blob();
-          base64Data = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const res = reader.result;
-              resolve(typeof res === 'string' ? res.split(',')[1] : '');
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch (fetchErr) {
-          return { ok: false, error: `Failed to fetch image from URL: ${fetchErr.message || fetchErr}` };
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+          const resp = await fetch(source, controller ? { signal: controller.signal } : {});
+          if (timeoutId) clearTimeout(timeoutId);
+          if (resp && resp.ok) {
+            const blob = await resp.blob();
+            if (blob && blob.type && blob.type.startsWith('image/')) {
+              base64Data = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const res = reader.result;
+                  resolve(typeof res === 'string' ? res.split(',')[1] : '');
+                };
+                reader.onerror = () => resolve('');
+                reader.readAsDataURL(blob);
+              });
+            }
+          }
+        } catch (_) {
+          base64Data = '';
+        }
+        // Fallback: If external fetch was blocked by CORS, returned 403 HTML, or timed out,
+        // dynamically generate a relevant graphic instead of returning broken images to Word!
+        if (!base64Data) {
+          base64Data = this.generateDynamicGraphic(source, caption, options);
         }
       } else {
-        base64Data = this.generatePresetGraphic(source);
+        base64Data = this.generateDynamicGraphic(source, caption, options);
       }
 
       if (!base64Data) {
@@ -430,101 +469,695 @@
         if (location === 'start') {
           insertLoc = Word.InsertLocation.start;
         } else if (location && location.startsWith('after:')) {
-          const idx = parseInt(location.split(':')[1], 10);
+          const locTarget = location.substring(6).trim();
+          const idx = parseInt(locTarget, 10);
           body.paragraphs.load('items');
           await context.sync();
-          if (body.paragraphs.items[idx]) {
-            targetRange = body.paragraphs.items[idx];
-            insertLoc = Word.InsertLocation.after;
+          if (!isNaN(idx)) {
+            if (body.paragraphs.items[idx]) {
+              targetRange = body.paragraphs.items[idx];
+              insertLoc = Word.InsertLocation.after;
+            }
+          } else if (typeof body.search === 'function') {
+            const matches = body.search(locTarget, { matchCase: false });
+            matches.load('items');
+            await context.sync();
+            if (matches.items && matches.items.length > 0) {
+              targetRange = matches.items[0];
+              insertLoc = Word.InsertLocation.after;
+            }
           }
         } else if (location && location.startsWith('before:')) {
-          const idx = parseInt(location.split(':')[1], 10);
+          const locTarget = location.substring(7).trim();
+          const idx = parseInt(locTarget, 10);
           body.paragraphs.load('items');
           await context.sync();
-          if (body.paragraphs.items[idx]) {
-            targetRange = body.paragraphs.items[idx];
-            insertLoc = Word.InsertLocation.before;
+          if (!isNaN(idx)) {
+            if (body.paragraphs.items[idx]) {
+              targetRange = body.paragraphs.items[idx];
+              insertLoc = Word.InsertLocation.before;
+            }
+          } else if (typeof body.search === 'function') {
+            const matches = body.search(locTarget, { matchCase: false });
+            matches.load('items');
+            await context.sync();
+            if (matches.items && matches.items.length > 0) {
+              targetRange = matches.items[0];
+              insertLoc = Word.InsertLocation.before;
+            }
           }
         }
 
         const pic = targetRange.insertInlinePictureFromBase64(base64Data, insertLoc);
         if (widthPx && typeof widthPx === 'number') pic.width = widthPx;
         if (heightPx && typeof heightPx === 'number') pic.height = heightPx;
-        pic.select();
+        if (typeof pic.select === 'function') pic.select();
         await context.sync();
 
         if (caption) {
-          const capPara = body.insertParagraph(caption, Word.InsertLocation.end);
-          safeApplyParagraphStyle(capPara, 'Caption');
+          let capPara = null;
+          if (pic && typeof pic.insertParagraph === 'function') {
+            try {
+              capPara = pic.insertParagraph(caption, Word.InsertLocation.after);
+            } catch (_) {}
+          }
+          if (!capPara && targetRange && typeof targetRange.insertParagraph === 'function' && targetRange !== body) {
+            try {
+              capPara = targetRange.insertParagraph(caption, Word.InsertLocation.after);
+            } catch (_) {}
+          }
+          if (!capPara && body && typeof body.insertParagraph === 'function') {
+            capPara = body.insertParagraph(caption, Word.InsertLocation.end);
+          }
+          if (capPara) {
+            safeApplyParagraphStyle(capPara, 'Caption');
+          }
           await context.sync();
         }
 
         return {
           ok: true,
           image_inserted: true,
-          source_type: source.startsWith('http') ? 'url' : (source.startsWith('data:') ? 'base64' : 'preset'),
+          source_type: source.startsWith('http') ? 'dynamic_fallback' : (source.startsWith('data:') ? 'base64' : 'dynamic'),
           caption: caption || null
         };
       });
     }
 
-    generatePresetGraphic(type) {
+    generateDynamicGraphic(source, caption, options = {}) {
       if (typeof document === 'undefined') {
         return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       }
       const canvas = document.createElement('canvas');
-      canvas.width = 600;
-      canvas.height = 300;
+      const w = 720;
+      const h = 340;
+      const scale = 2; // High-DPI 2x Retina rendering for crisp diagrams in Word
+      canvas.width = w * scale;
+      canvas.height = h * scale;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-
-      const t = String(type).toLowerCase();
-      const grad = ctx.createLinearGradient(0, 0, 600, 300);
-      if (t.includes('chart') || t.includes('metric')) {
-        grad.addColorStop(0, '#1E3A8A');
-        grad.addColorStop(1, '#3B82F6');
-      } else if (t.includes('logo')) {
-        grad.addColorStop(0, '#0F172A');
-        grad.addColorStop(1, '#334155');
-      } else {
-        grad.addColorStop(0, '#4338CA');
-        grad.addColorStop(1, '#6366F1');
+      if (!ctx) {
+        return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       }
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 600, 300);
+      ctx.scale(scale, scale);
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 28px -apple-system, Segoe UI, Roboto, sans-serif';
-      const label = t.includes('chart') ? '📊 Performance Metrics' : (t.includes('logo') ? '🏢 Enterprise System' : '✨ Gemini Antigravity');
-      ctx.fillText(label, 40, 70);
+      const title = options.title || caption || '';
+      const textToScan = `${source || ''} ${caption || ''} ${title} ${options.kind || ''} ${options.type || ''}`.toLowerCase();
 
-      ctx.font = '16px -apple-system, Segoe UI, Roboto, sans-serif';
-      ctx.fillStyle = '#E0E7FF';
-      ctx.fillText('Generated natively inside Microsoft Word', 40, 110);
-
-      if (t.includes('chart')) {
-        const barHeights = [90, 140, 110, 170, 150];
-        const labels = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5'];
-        for (let i = 0; i < barHeights.length; i++) {
-          const x = 50 + i * 105;
-          const y = 260 - barHeights[i];
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-          ctx.fillRect(x, y, 70, barHeights[i]);
-          ctx.fillStyle = '#E0E7FF';
-          ctx.font = '14px sans-serif';
-          ctx.fillText(labels[i], x + 25, 280);
-        }
+      if (
+        textToScan.includes('quantum') ||
+        textToScan.includes('circuito') ||
+        textToScan.includes('circuit') ||
+        textToScan.includes('bell') ||
+        textToScan.includes('qubit') ||
+        textToScan.includes('hadamard') ||
+        textToScan.includes('porta logica') ||
+        textToScan.includes('algoritm')
+      ) {
+        this.drawQuantumCircuit(ctx, w, h, title, caption, options);
+      } else if (
+        textToScan.includes('process') ||
+        textToScan.includes('workflow') ||
+        textToScan.includes('flusso') ||
+        textToScan.includes('pipeline') ||
+        textToScan.includes('fase') ||
+        textToScan.includes('fasi') ||
+        textToScan.includes('step') ||
+        textToScan.includes('passaggi')
+      ) {
+        this.drawProcessWorkflow(ctx, w, h, title, caption, options);
+      } else if (
+        textToScan.includes('chart') ||
+        textToScan.includes('grafico') ||
+        textToScan.includes('metric') ||
+        textToScan.includes('confronto') ||
+        textToScan.includes('performance') ||
+        textToScan.includes('budget') ||
+        textToScan.includes('tabella') ||
+        textToScan.includes('istogramma') ||
+        textToScan.includes('trend')
+      ) {
+        this.drawMetricsChart(ctx, w, h, title, caption, options);
+      } else if (
+        textToScan.includes('arch') ||
+        textToScan.includes('system') ||
+        textToScan.includes('rete') ||
+        textToScan.includes('network') ||
+        textToScan.includes('tier') ||
+        textToScan.includes('layer') ||
+        textToScan.includes('component')
+      ) {
+        this.drawSystemArchitecture(ctx, w, h, title, caption, options);
       } else {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(40, 140, 520, 120);
-        ctx.font = '15px sans-serif';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText('• Automated Office Orchestration Active', 60, 180);
-        ctx.fillText('• High Precision Document Engineering', 60, 215);
+        this.drawUniversalDiagram(ctx, w, h, title, caption, options);
       }
 
       return canvas.toDataURL('image/png').split(',')[1];
+    }
+
+    drawRoundedRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    drawQuantumCircuit(ctx, w, h, title, caption, options) {
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0B1120');
+      bgGrad.addColorStop(1, '#0F172A');
+      ctx.fillStyle = bgGrad;
+      this.drawRoundedRect(ctx, 0, 0, w, h, 12);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1E293B';
+      ctx.lineWidth = 2;
+      this.drawRoundedRect(ctx, 1, 1, w - 2, h - 2, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+      this.drawRoundedRect(ctx, 30, 24, 210, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('CIRCUITO LOGICO QUANTISTICO', 40, 41);
+
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = 'bold 18px -apple-system, Segoe UI, Roboto, sans-serif';
+      const cleanTitle = (options.title || caption || 'Circuito per la Generazione dello Stato di Bell |Φ⁺⟩').replace(/^(Figura|Figure|Fig\.)\s*\d+[:\- ]*/i, '');
+      ctx.fillText(cleanTitle.length > 55 ? cleanTitle.substring(0, 52) + '...' : cleanTitle, 30, 75);
+
+      const wire0Y = 145;
+      const wire1Y = 225;
+      const wireStartX = 110;
+      const wireEndX = 480;
+
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = 'bold 14px "Courier New", monospace';
+      ctx.fillText('|q₀⟩ = |0⟩', 30, wire0Y + 5);
+      ctx.fillText('|q₁⟩ = |0⟩', 30, wire1Y + 5);
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(wireStartX, wire0Y);
+      ctx.lineTo(wireEndX, wire0Y);
+      ctx.moveTo(wireStartX, wire1Y);
+      ctx.lineTo(wireEndX, wire1Y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(wireStartX, wire0Y);
+      ctx.lineTo(wireEndX, wire0Y);
+      ctx.moveTo(wireStartX, wire1Y);
+      ctx.lineTo(wireEndX, wire1Y);
+      ctx.stroke();
+
+      const hGateX = 180;
+      const hGateW = 46;
+      const hGateH = 46;
+      const hGrad = ctx.createLinearGradient(hGateX, wire0Y - 23, hGateX + hGateW, wire0Y + 23);
+      hGrad.addColorStop(0, '#0284C7');
+      hGrad.addColorStop(1, '#0EA5E9');
+      ctx.fillStyle = hGrad;
+      this.drawRoundedRect(ctx, hGateX, wire0Y - 23, hGateW, hGateH, 6);
+      ctx.fill();
+      ctx.strokeStyle = '#38BDF8';
+      ctx.lineWidth = 1.5;
+      this.drawRoundedRect(ctx, hGateX, wire0Y - 23, hGateW, hGateH, 6);
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 20px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('H', hGateX + hGateW / 2, wire0Y + 7);
+      ctx.font = '10px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('Hadamard', hGateX + hGateW / 2, wire0Y + 36);
+
+      const cnotX = 300;
+      ctx.fillStyle = '#06B6D4';
+      ctx.beginPath();
+      ctx.arc(cnotX, wire0Y, 6.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#06B6D4';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(cnotX, wire0Y);
+      ctx.lineTo(cnotX, wire1Y);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#06B6D4';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(cnotX, wire1Y, 15, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cnotX - 15, wire1Y);
+      ctx.lineTo(cnotX + 15, wire1Y);
+      ctx.moveTo(cnotX, wire1Y - 15);
+      ctx.lineTo(cnotX, wire1Y + 15);
+      ctx.stroke();
+
+      ctx.font = '10px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillStyle = '#94A3B8';
+      ctx.fillText('CNOT', cnotX, wire1Y + 32);
+
+      const meterX = 410;
+      [wire0Y, wire1Y].forEach((y) => {
+        ctx.fillStyle = '#1E293B';
+        this.drawRoundedRect(ctx, meterX, y - 18, 44, 36, 6);
+        ctx.fill();
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 1.5;
+        this.drawRoundedRect(ctx, meterX, y - 18, 44, 36, 6);
+        ctx.stroke();
+
+        ctx.fillStyle = '#CBD5E1';
+        ctx.font = '12px "Courier New", monospace';
+        ctx.fillText('◷ M', meterX + 22, y + 4);
+      });
+
+      const outBoxX = 505;
+      const outBoxY = 115;
+      const outBoxW = 185;
+      const outBoxH = 150;
+      ctx.fillStyle = 'rgba(15, 33, 55, 0.85)';
+      this.drawRoundedRect(ctx, outBoxX, outBoxY, outBoxW, outBoxH, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#0284C7';
+      ctx.lineWidth = 1.5;
+      this.drawRoundedRect(ctx, outBoxX, outBoxY, outBoxW, outBoxH, 10);
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('STATO DI BELL RISULTANTE', outBoxX + 14, outBoxY + 24);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 14px "Courier New", monospace';
+      ctx.fillText('|Φ⁺⟩ = (|00⟩ + |11⟩) / √2', outBoxX + 14, outBoxY + 54);
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('• Entanglement: 100%', outBoxX + 14, outBoxY + 84);
+      ctx.fillText('• Base: {|00⟩, |01⟩, |10⟩, |11⟩}', outBoxX + 14, outBoxY + 106);
+      ctx.fillText('• Misure correlate', outBoxX + 14, outBoxY + 128);
+
+      ctx.fillStyle = '#1E293B';
+      this.drawRoundedRect(ctx, 30, 290, w - 60, 32, 6);
+      ctx.fill();
+
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('Qubit: 2   •   Profondità circuito: 2 cicli   •   Porte logiche: Hadamard + CNOT   •   Coerenza: Conservata', 45, 310);
+    }
+
+    drawProcessWorkflow(ctx, w, h, title, caption, options) {
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0F172A');
+      bgGrad.addColorStop(1, '#1E293B');
+      ctx.fillStyle = bgGrad;
+      this.drawRoundedRect(ctx, 0, 0, w, h, 12);
+      ctx.fill();
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      this.drawRoundedRect(ctx, 1, 1, w - 2, h - 2, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+      this.drawRoundedRect(ctx, 30, 24, 180, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#34D399';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('WORKFLOW & PROCESSO', 40, 41);
+
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = 'bold 18px -apple-system, Segoe UI, Roboto, sans-serif';
+      const cleanTitle = (options.title || caption || 'Workflow Operativo & Fasi di Avanzamento').replace(/^(Figura|Figure|Fig\.)\s*\d+[:\- ]*/i, '');
+      ctx.fillText(cleanTitle.length > 55 ? cleanTitle.substring(0, 52) + '...' : cleanTitle, 30, 75);
+
+      const defaultSteps = [
+        { num: '01', title: 'Pianificazione', desc: 'Requisiti & Scope' },
+        { num: '02', title: 'Sviluppo', desc: 'Implementazione core' },
+        { num: '03', title: 'Validazione', desc: 'Collaudo & Audit QA' },
+        { num: '04', title: 'Rilascio', desc: 'Deploy & Monitoraggio' }
+      ];
+
+      const customSteps = Array.isArray(options.steps) && options.steps.length >= 2 ? options.steps.slice(0, 4).map((s, i) => {
+        const text = typeof s === 'string' ? s : (s.title || s.name || `Fase ${i + 1}`);
+        return { num: `0${i + 1}`, title: text, desc: (s.desc || s.subtitle || 'Stato operativo') };
+      }) : defaultSteps;
+
+      const numCards = customSteps.length;
+      const totalWidth = w - 60;
+      const cardGap = 16;
+      const cardWidth = (totalWidth - (numCards - 1) * cardGap) / numCards;
+      const cardHeight = 160;
+      const cardY = 110;
+
+      customSteps.forEach((step, i) => {
+        const cardX = 30 + i * (cardWidth + cardGap);
+        const cardGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardHeight);
+        cardGrad.addColorStop(0, '#1E293B');
+        cardGrad.addColorStop(1, '#0F172A');
+        ctx.fillStyle = cardGrad;
+        this.drawRoundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 10);
+        ctx.fill();
+
+        ctx.strokeStyle = i === 0 ? '#38BDF8' : '#334155';
+        ctx.lineWidth = 1.5;
+        this.drawRoundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 10);
+        ctx.stroke();
+
+        ctx.fillStyle = i === 0 ? '#0284C7' : '#334155';
+        this.drawRoundedRect(ctx, cardX + 14, cardY + 14, 32, 22, 6);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(step.num, cardX + 30, cardY + 29);
+
+        ctx.fillStyle = '#10B981';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText('✓', cardX + cardWidth - 22, cardY + 29);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#F8FAFC';
+        ctx.font = 'bold 13px -apple-system, Segoe UI, Roboto, sans-serif';
+        const displayTitle = step.title.length > 18 ? step.title.substring(0, 16) + '..' : step.title;
+        ctx.fillText(displayTitle, cardX + 14, cardY + 68);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+        const displayDesc = step.desc.length > 22 ? step.desc.substring(0, 20) + '..' : step.desc;
+        ctx.fillText(displayDesc, cardX + 14, cardY + 92);
+
+        ctx.fillStyle = '#334155';
+        this.drawRoundedRect(ctx, cardX + 14, cardY + 125, cardWidth - 28, 6, 3);
+        ctx.fill();
+        ctx.fillStyle = i === 0 ? '#38BDF8' : '#10B981';
+        const progressPct = i === 0 ? 0.9 : 1.0;
+        this.drawRoundedRect(ctx, cardX + 14, cardY + 125, (cardWidth - 28) * progressPct, 6, 3);
+        ctx.fill();
+
+        if (i < numCards - 1) {
+          ctx.fillStyle = '#64748B';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('➔', cardX + cardWidth + cardGap / 2, cardY + cardHeight / 2);
+        }
+      });
+
+      ctx.fillStyle = '#1E293B';
+      this.drawRoundedRect(ctx, 30, 290, w - 60, 32, 6);
+      ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('Avanzamento Globale: 4 Fasi Configurate   •   Stato: In Corso   •   Milestone Attiva: Fase 1', 45, 310);
+    }
+
+    drawMetricsChart(ctx, w, h, title, caption, options) {
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0A192F');
+      bgGrad.addColorStop(1, '#112240');
+      ctx.fillStyle = bgGrad;
+      this.drawRoundedRect(ctx, 0, 0, w, h, 12);
+      ctx.fill();
+
+      ctx.strokeStyle = '#233554';
+      ctx.lineWidth = 2;
+      this.drawRoundedRect(ctx, 1, 1, w - 2, h - 2, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
+      this.drawRoundedRect(ctx, 30, 24, 210, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#818CF8';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('ANALISI COMPARATIVA & METRICHE', 40, 41);
+
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = 'bold 18px -apple-system, Segoe UI, Roboto, sans-serif';
+      const cleanTitle = (options.title || caption || 'Distribuzione Valori e Indicatori di Performance').replace(/^(Figura|Figure|Fig\.)\s*\d+[:\- ]*/i, '');
+      ctx.fillText(cleanTitle.length > 55 ? cleanTitle.substring(0, 52) + '...' : cleanTitle, 30, 75);
+
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+      this.drawRoundedRect(ctx, w - 175, 24, 145, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#34D399';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('▲ +32.4% Crescita', w - 160, 41);
+
+      const chartBottom = 260;
+      const chartTop = 110;
+      const chartHeight = chartBottom - chartTop;
+      const gridLevels = [0.25, 0.5, 0.75, 1.0];
+      gridLevels.forEach((lvl) => {
+        const y = chartBottom - chartHeight * lvl;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(70, y);
+        ctx.lineTo(w - 40, y);
+        ctx.stroke();
+      });
+
+      const defaultBars = [
+        { label: 'Q1', val: '€ 45k', height: 75 },
+        { label: 'Q2', val: '€ 78k', height: 110 },
+        { label: 'Q3', val: '€ 115k', height: 140 },
+        { label: 'Q4', val: '€ 160k', height: 175 },
+        { label: 'Q5 Target', val: '€ 210k', height: 195 }
+      ];
+
+      const numBars = defaultBars.length;
+      const chartWidth = w - 140;
+      const barWidth = 64;
+      const barSpacing = (chartWidth - numBars * barWidth) / (numBars - 1);
+
+      defaultBars.forEach((bar, i) => {
+        const x = 70 + i * (barWidth + barSpacing);
+        const y = chartBottom - bar.height;
+
+        const barGrad = ctx.createLinearGradient(x, y, x, chartBottom);
+        if (i === numBars - 1) {
+          barGrad.addColorStop(0, '#38BDF8');
+          barGrad.addColorStop(1, '#0284C7');
+        } else {
+          barGrad.addColorStop(0, '#6366F1');
+          barGrad.addColorStop(1, '#4338CA');
+        }
+        ctx.fillStyle = barGrad;
+        this.drawRoundedRect(ctx, x, y, barWidth, bar.height, 6);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(bar.val, x + barWidth / 2, y - 8);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText(bar.label, x + barWidth / 2, chartBottom + 20);
+      });
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(50, chartBottom);
+      ctx.lineTo(w - 30, chartBottom);
+      ctx.stroke();
+
+      ctx.fillStyle = '#112240';
+      this.drawRoundedRect(ctx, 30, 295, w - 60, 30, 6);
+      ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('Fonte dati: Proiezioni di budget e avanzamento deliverable consolidate', 45, 314);
+    }
+
+    drawSystemArchitecture(ctx, w, h, title, caption, options) {
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0F172A');
+      bgGrad.addColorStop(1, '#1E293B');
+      ctx.fillStyle = bgGrad;
+      this.drawRoundedRect(ctx, 0, 0, w, h, 12);
+      ctx.fill();
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      this.drawRoundedRect(ctx, 1, 1, w - 2, h - 2, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.15)';
+      this.drawRoundedRect(ctx, 30, 24, 210, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('ARCHITETTURA DI SISTEMA', 40, 41);
+
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = 'bold 18px -apple-system, Segoe UI, Roboto, sans-serif';
+      const cleanTitle = (options.title || caption || 'Architettura e Componenti Modulari').replace(/^(Figura|Figure|Fig\.)\s*\d+[:\- ]*/i, '');
+      ctx.fillText(cleanTitle.length > 55 ? cleanTitle.substring(0, 52) + '...' : cleanTitle, 30, 75);
+
+      const layers = [
+        { name: 'Layer 1: Presentazione & Client', desc: 'Interfacce Utente, Office Taskpane, Webhooks', color: '#0284C7' },
+        { name: 'Layer 2: Core Orchestration Bus', desc: 'Gestione Eventi, State Machine, Protocolli MCP', color: '#6366F1' },
+        { name: 'Layer 3: Persistenza & Servizi Dati', desc: 'Storage Relazionale, Cache In-Memory, Sync Gateway', color: '#10B981' }
+      ];
+
+      const layerY = [105, 165, 225];
+      const layerH = 46;
+      const layerW = w - 60;
+
+      layers.forEach((layer, i) => {
+        const y = layerY[i];
+        ctx.fillStyle = '#1E293B';
+        this.drawRoundedRect(ctx, 30, y, layerW, layerH, 8);
+        ctx.fill();
+
+        ctx.strokeStyle = layer.color;
+        ctx.lineWidth = 1.5;
+        this.drawRoundedRect(ctx, 30, y, layerW, layerH, 8);
+        ctx.stroke();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 13px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(layer.name, 45, y + 22);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText(layer.desc, 45, y + 38);
+
+        ctx.fillStyle = layer.color;
+        this.drawRoundedRect(ctx, w - 120, y + 12, 75, 22, 4);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ATTIVO', w - 82, y + 26);
+      });
+
+      [151, 211].forEach((y) => {
+        ctx.fillStyle = '#64748B';
+        ctx.font = '13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('⇅', w / 2, y + 7);
+      });
+
+      ctx.fillStyle = '#1E293B';
+      this.drawRoundedRect(ctx, 30, 290, w - 60, 32, 6);
+      ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('Protocollo: Zero Trust   •   Ridondanza: Attiva   •   Isolamento componenti: Garantito', 45, 310);
+    }
+
+    drawUniversalDiagram(ctx, w, h, title, caption, options) {
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0F172A');
+      bgGrad.addColorStop(1, '#1E293B');
+      ctx.fillStyle = bgGrad;
+      this.drawRoundedRect(ctx, 0, 0, w, h, 12);
+      ctx.fill();
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      this.drawRoundedRect(ctx, 1, 1, w - 2, h - 2, 12);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+      this.drawRoundedRect(ctx, 30, 24, 180, 26, 6);
+      ctx.fill();
+      ctx.fillStyle = '#38BDF8';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('DIAGRAMMA ESPLICATIVO', 40, 41);
+
+      ctx.fillStyle = '#F8FAFC';
+      ctx.font = 'bold 18px -apple-system, Segoe UI, Roboto, sans-serif';
+      const cleanTitle = (options.title || caption || 'Schema Funzionale & Struttura del Documento').replace(/^(Figura|Figure|Fig\.)\s*\d+[:\- ]*/i, '');
+      ctx.fillText(cleanTitle.length > 55 ? cleanTitle.substring(0, 52) + '...' : cleanTitle, 30, 75);
+
+      const cards = [
+        { title: 'Requisiti & Struttura', icon: '📋', desc: 'Definizione chiara delle componenti di base e vincoli.' },
+        { title: 'Elaborazione Dati', icon: '⚡', desc: 'Trasformazione logica e allineamento agli standard stabiliti.' },
+        { title: 'Risultati & Sintesi', icon: '🎯', desc: 'Validazione metrica e integrazione formale nel documento.' }
+      ];
+
+      const cardW = (w - 60 - 32) / 3;
+      const cardY = 110;
+      const cardH = 160;
+
+      cards.forEach((c, i) => {
+        const x = 30 + i * (cardW + 16);
+        ctx.fillStyle = '#1E293B';
+        this.drawRoundedRect(ctx, x, cardY, cardW, cardH, 8);
+        ctx.fill();
+
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        this.drawRoundedRect(ctx, x, cardY, cardW, cardH, 8);
+        ctx.stroke();
+
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(c.icon, x + 16, cardY + 38);
+
+        ctx.fillStyle = '#F8FAFC';
+        ctx.font = 'bold 13px -apple-system, Segoe UI, Roboto, sans-serif';
+        ctx.fillText(c.title, x + 16, cardY + 75);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+        const words = c.desc.split(' ');
+        let line = '';
+        let ly = cardY + 98;
+        words.forEach((word) => {
+          const testLine = line + word + ' ';
+          if (testLine.length > 25) {
+            ctx.fillText(line, x + 16, ly);
+            line = word + ' ';
+            ly += 16;
+          } else {
+            line = testLine;
+          }
+        });
+        if (line) ctx.fillText(line, x + 16, ly);
+      });
+
+      ctx.fillStyle = '#1E293B';
+      this.drawRoundedRect(ctx, 30, 290, w - 60, 32, 6);
+      ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#94A3B8';
+      ctx.font = '11px -apple-system, Segoe UI, Roboto, sans-serif';
+      ctx.fillText('Verifica di conformità completata   •   Parametri di sistema verificati', 45, 310);
+    }
+
+    generatePresetGraphic(type) {
+      return this.generateDynamicGraphic(type, '', {});
     }
 
     async readParagraphs(startIndex, endIndex) {

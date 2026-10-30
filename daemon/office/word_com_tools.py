@@ -1238,6 +1238,45 @@ def word_insert_image(doc, file_path: str, location: Optional[str] = "end",
         raise
 
 
+@_tool
+def word_generate_image(doc, prompt: str, caption: Optional[str] = None,
+                        location: Optional[str] = "end", aspect_ratio: Optional[str] = "16:9",
+                        alt_text: Optional[str] = None, width_pt: Optional[float] = None,
+                        height_pt: Optional[float] = None, width_px: Optional[float] = None,
+                        height_px: Optional[float] = None, **kwargs) -> Dict[str, Any]:
+    """
+    Genera un'immagine AI fotorealistica o illustrativa usando Google Imagen 3 (se la chiave API e' configurata)
+    e la inserisce nativamente nel documento Word con didascalia.
+    """
+    from daemon.auth import auth_bridge
+    api_key = auth_bridge.get_api_key()
+    if not api_key:
+        return {
+            "ok": False,
+            "error": "La generazione di immagini AI con Imagen 3 richiede una chiave API Gemini. "
+                     "Aggiungi la tua chiave API nelle impostazioni del pannello laterale per attivare questa funzionalità."
+        }
+
+    from .imagen_client import generate_imagen3_image
+    gen_res = generate_imagen3_image(prompt, aspect_ratio=aspect_ratio or "16:9", api_key=api_key)
+    if not gen_res.get("ok"):
+        return gen_res
+
+    file_path = gen_res["file_path"]
+    img_caption = caption or f"Figura: {prompt}"
+    alt = alt_text or prompt
+    effective_width = width_pt if width_pt is not None else width_px
+    effective_height = height_pt if height_pt is not None else height_px
+    insert_res = word_insert_image(doc, file_path=file_path, location=location,
+                                   alt_text=alt, width_pt=effective_width, height_pt=effective_height,
+                                   caption=img_caption)
+    if insert_res.get("ok"):
+        insert_res["generated_by"] = "gemini-imagen-3"
+        insert_res["prompt"] = prompt
+        insert_res["file_path"] = file_path
+    return insert_res
+
+
 def _items(doc, ref_type) -> List[str]:
     items = doc.GetCrossReferenceItems(ref_type)
     return [str(x) for x in (items or ())]
@@ -1921,6 +1960,18 @@ EXTRA_TOOLS: Dict[str, Dict[str, Any]] = {
                                 "restart": {"type": "boolean"}, "start": {"type": "integer", "minimum": 1}},
                                []),
     },
+    "word_generate_image": {
+        "fn": word_generate_image, "destructive": False,
+        "description": "Generate an AI image/picture using Google Gemini Imagen 3 from a text prompt and insert it into Word. Active ONLY if the user has configured a Gemini API key in Settings.",
+        "inputSchema": _schema({"prompt": {"type": "string", "description": "Detailed text prompt describing the image to generate."},
+                                "caption": {"type": "string", "description": "Optional caption to display under the image."},
+                                "location": _LOC,
+                                "aspect_ratio": {"type": "string", "enum": ["16:9", "1:1", "4:3", "3:4", "9:16"], "default": "16:9"},
+                                "alt_text": {"type": "string"},
+                                "width_pt": {"type": "number"},
+                                "height_pt": {"type": "number"}},
+                               ["prompt"]),
+    },
 }
 
 
@@ -1941,4 +1992,4 @@ def call_tool(doc, name: str, args: Optional[Dict[str, Any]] = None) -> Dict[str
 
 __all__ = ["TOOLS", "EXTRA_TOOLS", "call_tool", "resolve_anchor", "insertion_range", "resolve_style", "caption_label",
            "layered_layout", "tree_layout", "critical_path", "glue_connectors_xml", "canvas_run_xml",
-           "word_insert_table_of_figures", "word_insert_image", "word_set_page_numbering"] + [n for n in TOOLS]
+           "word_insert_table_of_figures", "word_insert_image", "word_generate_image", "word_set_page_numbering"] + [n for n in TOOLS]

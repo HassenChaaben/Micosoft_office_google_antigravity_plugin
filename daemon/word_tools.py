@@ -137,7 +137,8 @@ WORD_TOOLS: List[Dict[str, Any]] = [
                     "description": "Where to insert: 'end', 'cursor', 'after:<index>', 'before:<index>'. Default 'end'.",
                     "default": "end"
                 }
-            }
+            },
+            "required": ["headers", "rows"]
         },
         "destructive": False
     },
@@ -484,13 +485,13 @@ WORD_TOOLS: List[Dict[str, Any]] = [
     },
     {
         "name": "word_insert_image",
-        "description": "Inserts an image/picture into the Word document at the specified location. Supports image URLs (https://...), base64 data URIs, or keywords ('logo', 'chart', 'diagram', 'banner'). Optionally adds an aligned caption below the picture.",
+        "description": "Inserts an image or generated diagram into the Word document at the specified location. Supports descriptive topic keywords (e.g. 'quantum circuit', 'diagram', 'chart', 'workflow', 'architecture'), base64 data URIs, or image URLs. High-resolution graphics are rendered natively and inserted with an aligned caption directly underneath.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "source": {
                     "type": "string",
-                    "description": "Image source: HTTPS URL, base64 data string, or preset keyword ('logo', 'chart', 'diagram', 'banner')."
+                    "description": "Image source: descriptive topic keyword (e.g. 'quantum circuit', 'workflow', 'chart'), HTTPS URL, or base64 data string."
                 },
                 "caption": {
                     "type": "string",
@@ -511,6 +512,40 @@ WORD_TOOLS: List[Dict[str, Any]] = [
                 }
             },
             "required": ["source"]
+        },
+        "destructive": False
+    },
+    {
+        "name": "word_generate_image",
+        "description": "Generates a realistic AI image or illustration using Google Gemini Imagen 3 from a text prompt and inserts it directly into the Word document with an aligned caption. Active ONLY when a Gemini API key is configured in Taskpane Settings.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "Detailed description of the image to generate (e.g. 'modern data center with illuminated server racks')."
+                },
+                "caption": {
+                    "type": "string",
+                    "description": "Optional caption text placed directly underneath the picture."
+                },
+                "location": {
+                    "type": "string",
+                    "description": "Where to insert: 'end', 'start', 'cursor', 'after:<index>', 'before:<index>'. Default 'end'.",
+                    "default": "end"
+                },
+                "aspect_ratio": {
+                    "type": "string",
+                    "enum": ["16:9", "1:1", "4:3", "3:4", "9:16"],
+                    "description": "Aspect ratio of the generated image. Default '16:9'.",
+                    "default": "16:9"
+                },
+                "width_px": {
+                    "type": "number",
+                    "description": "Optional image width in points/pixels."
+                }
+            },
+            "required": ["prompt"]
         },
         "destructive": False
     },
