@@ -37,6 +37,9 @@ PM_DIR = os.path.join(
     "Template_Progetto_PM"
 )
 
+if not os.path.isdir(PM_DIR):
+    pytestmark = pytest.mark.skip(reason="practical_tests local templates not present in repo")
+
 @pytest.fixture(scope="module")
 def word():
     try:

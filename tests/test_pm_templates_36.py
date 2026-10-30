@@ -21,6 +21,9 @@ PM_TEMPLATE_DIR = os.path.abspath(
     )
 )
 
+if not os.path.isdir(PM_TEMPLATE_DIR):
+    pytestmark = pytest.mark.skip(reason="practical_tests local templates not present in repo")
+
 # 36 Tailored prompts for each template, plus a follow-up modification/enhancement prompt
 PM_36_PROMPTS = [
     {

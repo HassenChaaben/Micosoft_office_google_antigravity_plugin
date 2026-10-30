@@ -20,9 +20,8 @@ certs/*.pem
 session.json
 .env
 
-# Practical test archives and macOS junk
-practical_tests/**/__MACOSX/
-practical_tests/**/.DS_Store
+# Practical test templates (local only)
+practical_tests/
 *.zip
 .DS_Store
 /screenshot_*.png
