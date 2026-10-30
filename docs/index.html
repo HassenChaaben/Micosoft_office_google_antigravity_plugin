@@ -515,7 +515,27 @@
     <section id="capabilities" class="matrix-section">
       <div class="section-header">
         <h2>Engineering Capabilities & Reality Matrix</h2>
-        <p>Total transparency: what works today in production versus features open for community contribution.</p>
+        <p>Total transparency: what works today in production versus features under active engineering and roadmap exploration.</p>
+      </div>
+
+      <!-- Legend Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
+          <span class="badge-status badge-prod" style="margin-bottom: 8px;">● Production</span>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Fully functional, end-to-end verified with live COM integration, tested in CI, and bundled into the standalone installer.</p>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
+          <span class="badge-status badge-partial" style="margin-bottom: 8px;">● In Progress</span>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Active core development. Foundational COM endpoints exist; full parity (formula linking, vector shapes) is tracked in GitHub Issues.</p>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
+          <span class="badge-status badge-stub" style="margin-bottom: 8px;">● UI Blueprint</span>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Visual interface design present in the taskpane to define UX workflows. Backend execution sandboxes and OAuth connectors not yet wired.</p>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
+          <span class="badge-status badge-unsupported" style="margin-bottom: 8px;">● Not Supported</span>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Outside current scope due to platform boundaries (e.g. macOS native COM). Pure Office.js fallbacks welcome via PRs.</p>
+        </div>
       </div>
 
       <table class="matrix-table">
