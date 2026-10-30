@@ -3,27 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gemini Antigravity for Microsoft Office — Autonomous AI Agent</title>
-  <meta name="description" content="Autonomous, publication-grade AI agent that operates directly on document objects inside Microsoft Word on Windows, powered by Google Gemini and Antigravity runtime.">
-  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <title>Micosoft_office_google_antigravity_plugin — Autonomous AI Copilot</title>
+  <meta name="description" content="An Autonomous AI Copilot for Microsoft Office connected with Antigravity. Open-source hobby project inspired by Claude's office integration.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0A0B0E;
-      --bg-secondary: #111318;
-      --bg-tertiary: #181B22;
-      --bg-card: #13151B;
-      --border-subtle: #222631;
-      --border-accent: #323847;
+      --bg-void: #050508;
+      --bg-primary: #0A0713;
+      --bg-secondary: #120C22;
+      --bg-card: rgba(18, 12, 34, 0.75);
+      --bg-card-hover: rgba(28, 18, 52, 0.85);
+      --border-subtle: rgba(168, 85, 247, 0.18);
+      --border-glow: rgba(168, 85, 247, 0.45);
+      --border-bright: #A855F7;
       --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --accent-blue: #38BDF8;
+      --text-secondary: #CBD5E1;
+      --text-muted: #94A3B8;
+      --purple-neon: #C084FC;
+      --purple-core: #A855F7;
+      --purple-deep: #7C3AED;
+      --purple-dark: #581C87;
       --accent-emerald: #10B981;
-      --accent-purple: #818CF8;
       --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
     }
 
     * {
@@ -33,40 +38,196 @@
     }
 
     body {
-      background-color: var(--bg-primary);
+      background-color: var(--bg-void);
       color: var(--text-primary);
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* Subtle Background Grid & Gradients */
-    .bg-glow {
-      position: absolute;
+    /* ==========================================================================
+       ANIMATED BACKGROUND LIGHTS & AURORAS
+       ========================================================================== */
+    .lights-layer {
+      position: fixed;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
       width: 100vw;
-      height: 600px;
-      background: radial-gradient(circle at 50% 150px, rgba(56, 189, 248, 0.08) 0%, rgba(129, 140, 248, 0.04) 40%, transparent 70%);
+      height: 100vh;
       pointer-events: none;
       z-index: 0;
+      overflow: hidden;
     }
 
+    .light-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.5;
+      animation: floatPulse 12s ease-in-out infinite alternate;
+    }
+
+    .light-orb-1 {
+      top: -100px;
+      left: 20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.45) 0%, rgba(124, 58, 237, 0.2) 60%, transparent 80%);
+      animation-duration: 14s;
+    }
+
+    .light-orb-2 {
+      top: 350px;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(88, 28, 135, 0.15) 60%, transparent 80%);
+      animation-duration: 18s;
+      animation-delay: -4s;
+    }
+
+    .light-orb-3 {
+      top: 1200px;
+      left: 15%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, rgba(99, 102, 241, 0.15) 60%, transparent 80%);
+      animation-duration: 20s;
+      animation-delay: -8s;
+    }
+
+    @keyframes floatPulse {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.35;
+      }
+      50% {
+        transform: translateY(60px) scale(1.15);
+        opacity: 0.65;
+      }
+      100% {
+        transform: translateY(-40px) scale(0.95);
+        opacity: 0.45;
+      }
+    }
+
+    /* Subtle grid overlay */
+    .bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        linear-gradient(to right, rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ==========================================================================
+       ANIMATED BIRDS IN THE BACKGROUND
+       ========================================================================== */
+    .birds-sky {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .bird-track {
+      position: absolute;
+      top: 15%;
+      left: -120px;
+      animation: birdFly 22s linear infinite;
+    }
+
+    .bird-track-2 {
+      top: 28%;
+      left: -120px;
+      animation: birdFly 28s linear infinite 7s;
+      transform: scale(0.7);
+      opacity: 0.65;
+    }
+
+    .bird-track-3 {
+      top: 42%;
+      left: -120px;
+      animation: birdFly 34s linear infinite 14s;
+      transform: scale(0.5);
+      opacity: 0.45;
+    }
+
+    .bird-track-4 {
+      top: 20%;
+      left: -120px;
+      animation: birdFly 25s linear infinite 18s;
+      transform: scale(0.65);
+      opacity: 0.55;
+    }
+
+    .bird-svg {
+      width: 48px;
+      height: 48px;
+      animation: birdBob 2.5s ease-in-out infinite alternate;
+    }
+
+    .wing-left {
+      transform-origin: 24px 24px;
+      animation: flapLeft 0.45s ease-in-out infinite alternate;
+    }
+
+    .wing-right {
+      transform-origin: 24px 24px;
+      animation: flapRight 0.45s ease-in-out infinite alternate;
+    }
+
+    @keyframes birdFly {
+      0% {
+        transform: translateX(-150px);
+      }
+      100% {
+        transform: translateX(calc(100vw + 200px));
+      }
+    }
+
+    @keyframes birdBob {
+      0% { transform: translateY(-12px); }
+      100% { transform: translateY(18px); }
+    }
+
+    @keyframes flapLeft {
+      0% { transform: rotate(-28deg); }
+      100% { transform: rotate(32deg); }
+    }
+
+    @keyframes flapRight {
+      0% { transform: rotate(28deg); }
+      100% { transform: rotate(-32deg); }
+    }
+
+    /* ==========================================================================
+       CONTAINER & NAVBAR
+       ========================================================================== */
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
       position: relative;
-      z-index: 1;
+      z-index: 10;
     }
 
-    /* Navbar */
     header {
       border-bottom: 1px solid var(--border-subtle);
-      background: rgba(10, 11, 14, 0.85);
-      backdrop-filter: blur(16px);
+      background: rgba(8, 6, 15, 0.85);
+      backdrop-filter: blur(20px);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -76,24 +237,33 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 72px;
+      height: 76px;
     }
 
     .nav-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       text-decoration: none;
       color: var(--text-primary);
       font-weight: 700;
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       letter-spacing: -0.01em;
+      transition: opacity 0.2s ease;
+    }
+
+    .nav-brand:hover {
+      opacity: 0.9;
     }
 
     .nav-brand img {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #000000;
+      border: 1px solid var(--border-glow);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+      padding: 4px;
     }
 
     .nav-links {
@@ -104,126 +274,186 @@
     }
 
     .nav-links a {
-      color: var(--text-secondary);
+      color: var(--text-muted);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 500;
-      transition: color 0.15s ease;
+      transition: all 0.2s ease;
     }
 
     .nav-links a:hover {
-      color: var(--text-primary);
+      color: var(--purple-neon);
+      text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
     }
 
     .btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      border-radius: 8px;
+      gap: 10px;
+      padding: 12px 22px;
+      border-radius: 10px;
       font-size: 0.875rem;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
     }
 
-    .btn-primary {
-      background: var(--text-primary);
-      color: #000;
-      border: 1px solid #fff;
+    .btn-neon {
+      background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
 
-    .btn-primary:hover {
-      background: #E2E8F0;
-      transform: translateY(-1px);
+    .btn-neon:hover {
+      background: linear-gradient(135deg, #C084FC 0%, #9333EA 100%);
+      box-shadow: 0 0 36px rgba(192, 132, 252, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
     }
 
-    .btn-secondary {
-      background: var(--bg-tertiary);
+    .btn-ghost {
+      background: rgba(18, 12, 34, 0.8);
       color: var(--text-primary);
-      border: 1px solid var(--border-accent);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
     }
 
-    .btn-secondary:hover {
-      background: #20242E;
-      border-color: #475569;
+    .btn-ghost:hover {
+      background: rgba(28, 18, 52, 0.9);
+      border-color: var(--purple-core);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+      transform: translateY(-2px);
     }
 
-    /* Hero */
+    /* ==========================================================================
+       HERO SECTION
+       ========================================================================== */
     .hero {
-      padding: 96px 0 64px;
+      padding: 88px 0 64px;
       text-align: center;
+      position: relative;
     }
 
-    .version-badge {
+    .hero-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
+      gap: 10px;
+      padding: 7px 18px;
       border-radius: 9999px;
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      color: var(--accent-blue);
-      font-size: 0.8rem;
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: var(--purple-neon);
+      font-size: 0.825rem;
       font-weight: 600;
       margin-bottom: 24px;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.25);
     }
 
-    .version-badge span.dot {
-      width: 6px;
-      height: 6px;
+    .hero-badge .pulse-light {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      background: var(--accent-blue);
+      background: #A855F7;
+      box-shadow: 0 0 10px #A855F7;
+      animation: beacon 1.8s infinite;
+    }
+
+    @keyframes beacon {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
 
     .hero h1 {
-      font-size: 3.5rem;
+      font-size: 2.85rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      line-height: 1.15;
-      margin-bottom: 20px;
-      background: linear-gradient(180deg, #FFFFFF 0%, #CBD5E1 100%);
+      line-height: 1.18;
+      margin-bottom: 16px;
+      word-break: break-word;
+      background: linear-gradient(180deg, #FFFFFF 0%, #E9D5FF 50%, #A855F7 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
     }
 
-    .hero p.lead {
-      font-size: 1.25rem;
-      color: var(--text-secondary);
-      max-width: 760px;
+    .hero-subtitle {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--purple-neon);
+      margin-bottom: 28px;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-story-card {
+      max-width: 820px;
       margin: 0 auto 36px;
-      font-weight: 400;
+      padding: 24px 28px;
+      background: rgba(18, 12, 34, 0.7);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      backdrop-filter: blur(16px);
+      text-align: left;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(168, 85, 247, 0.15);
+    }
+
+    .hero-story-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .hero-story-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .hero-story-card strong {
+      color: #FFFFFF;
+    }
+
+    .hobby-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #FBBF24;
+      font-size: 0.8rem;
+      font-weight: 600;
     }
 
     .hero-actions {
       display: flex;
       justify-content: center;
-      gap: 14px;
+      gap: 16px;
       flex-wrap: wrap;
     }
 
-    /* Visual Showcase */
-    .showcase {
-      margin: 64px 0 96px;
-    }
-
+    /* ==========================================================================
+       SHOWCASE & CARDS
+       ========================================================================== */
     .section-header {
       text-align: center;
-      margin-bottom: 48px;
+      margin: 72px 0 44px;
     }
 
     .section-header h2 {
-      font-size: 2rem;
+      font-size: 2.1rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       margin-bottom: 12px;
+      background: linear-gradient(180deg, #FFFFFF 0%, #D8B4FE 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .section-header p {
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-size: 1.05rem;
-      max-width: 640px;
+      max-width: 660px;
       margin: 0 auto;
     }
 
@@ -236,14 +466,17 @@
     .gallery-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      backdrop-filter: blur(14px);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .gallery-card:hover {
-      transform: translateY(-3px);
-      border-color: var(--border-accent);
+      transform: translateY(-4px);
+      border-color: var(--border-bright);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(168, 85, 247, 0.35);
     }
 
     .gallery-card img {
@@ -254,25 +487,63 @@
     }
 
     .gallery-card-body {
-      padding: 20px;
+      padding: 22px;
     }
 
     .gallery-card-body h3 {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 600;
       margin-bottom: 8px;
+      color: #FFFFFF;
     }
 
     .gallery-card-body p {
-      font-size: 0.875rem;
+      font-size: 0.885rem;
       color: var(--text-secondary);
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
-    /* Capabilities Matrix */
+    /* ==========================================================================
+       CAPABILITIES MATRIX & LEGEND
+       ========================================================================== */
     .matrix-section {
-      padding: 64px 0;
-      border-top: 1px solid var(--border-subtle);
+      padding: 32px 0 64px;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .legend-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px 18px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .legend-card:hover {
+      border-color: var(--purple-core);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.25);
+    }
+
+    .legend-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-card p {
+      font-size: 0.825rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
     }
 
     .matrix-table {
@@ -281,18 +552,19 @@
       border-spacing: 0;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
+      border-radius: 14px;
       overflow: hidden;
-      margin-top: 32px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     }
 
     .matrix-table th {
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
+      background: rgba(18, 12, 34, 0.95);
+      color: var(--purple-neon);
       text-align: left;
       padding: 16px 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.82rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border-bottom: 1px solid var(--border-subtle);
@@ -300,149 +572,229 @@
 
     .matrix-table td {
       padding: 16px 20px;
-      font-size: 0.9rem;
+      font-size: 0.885rem;
       border-bottom: 1px solid var(--border-subtle);
       vertical-align: middle;
+      color: var(--text-secondary);
+    }
+
+    .matrix-table tr:hover td {
+      background: rgba(168, 85, 247, 0.04);
     }
 
     .matrix-table tr:last-child td {
       border-bottom: none;
     }
 
+    .matrix-table a {
+      color: var(--purple-neon);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .matrix-table a:hover {
+      text-decoration: underline;
+      text-shadow: 0 0 8px rgba(192, 132, 252, 0.7);
+    }
+
     .badge-status {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 6px;
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
     .badge-prod {
-      background: rgba(16, 185, 129, 0.12);
+      background: rgba(16, 185, 129, 0.15);
       color: #34D399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.4);
     }
 
     .badge-partial {
-      background: rgba(245, 158, 11, 0.12);
+      background: rgba(245, 158, 11, 0.15);
       color: #FBBF24;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      border: 1px solid rgba(245, 158, 11, 0.4);
     }
 
     .badge-stub {
-      background: rgba(100, 116, 139, 0.12);
-      color: #94A3B8;
-      border: 1px solid rgba(100, 116, 139, 0.3);
+      background: rgba(168, 85, 247, 0.15);
+      color: #C084FC;
+      border: 1px solid rgba(168, 85, 247, 0.4);
     }
 
     .badge-unsupported {
-      background: rgba(239, 68, 68, 0.12);
-      color: #F87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(244, 63, 94, 0.15);
+      color: #FB7185;
+      border: 1px solid rgba(244, 63, 94, 0.4);
     }
 
-    /* Workflow & Steps */
+    /* ==========================================================================
+       SETUP & CONTRIBUTING
+       ========================================================================== */
     .steps-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
-      margin-top: 40px;
     }
 
     .step-card {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 28px 24px;
-      position: relative;
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+    }
+
+    .step-card:hover {
+      border-color: var(--purple-core);
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+      transform: translateY(-2px);
     }
 
     .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-accent);
-      color: var(--accent-blue);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid var(--border-glow);
+      color: var(--purple-neon);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       margin-bottom: 16px;
       font-family: 'JetBrains Mono', monospace;
     }
 
     .step-card h3 {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       margin-bottom: 8px;
+      color: #FFFFFF;
     }
 
     .step-card p {
-      font-size: 0.875rem;
+      font-size: 0.885rem;
       color: var(--text-secondary);
       line-height: 1.55;
     }
 
-    /* Code block */
     pre {
-      background: #0D0E12;
+      background: #08060F;
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 12px 16px;
+      border-radius: 10px;
+      padding: 14px 18px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.825rem;
-      color: #E2E8F0;
+      font-size: 0.84rem;
+      color: #E9D5FF;
       overflow-x: auto;
-      margin-top: 12px;
+      margin-top: 14px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
-    /* Footer */
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
     footer {
       border-top: 1px solid var(--border-subtle);
-      padding: 48px 0;
+      padding: 56px 0;
       text-align: center;
       color: var(--text-muted);
       font-size: 0.875rem;
+      background: rgba(5, 5, 8, 0.95);
+      position: relative;
+      z-index: 10;
     }
 
     footer a {
-      color: var(--text-secondary);
+      color: var(--purple-neon);
       text-decoration: none;
+      font-weight: 600;
     }
 
     footer a:hover {
-      color: var(--text-primary);
+      text-decoration: underline;
     }
 
-    @media (max-width: 840px) {
-      .hero h1 { font-size: 2.5rem; }
-      .gallery-grid, .steps-grid { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 2.2rem; }
+      .gallery-grid, .steps-grid, .legend-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-glow"></div>
+  <!-- Animated Background Lights -->
+  <div class="lights-layer">
+    <div class="light-orb light-orb-1"></div>
+    <div class="light-orb light-orb-2"></div>
+    <div class="light-orb light-orb-3"></div>
+  </div>
+
+  <!-- Cosmic Grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Animated Flying Birds in the Background Sky -->
+  <div class="birds-sky">
+    <!-- Bird 1 -->
+    <div class="bird-track">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#C084FC" fill-opacity="0.85"/>
+        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#A855F7" fill-opacity="0.75"/>
+        <circle cx="32" cy="32" r="3" fill="#FFFFFF"/>
+      </svg>
+    </div>
+
+    <!-- Bird 2 -->
+    <div class="bird-track-2">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#E9D5FF" fill-opacity="0.7"/>
+        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#C084FC" fill-opacity="0.6"/>
+        <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
+      </svg>
+    </div>
+
+    <!-- Bird 3 -->
+    <div class="bird-track-3">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#A855F7" fill-opacity="0.5"/>
+        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#7C3AED" fill-opacity="0.45"/>
+        <circle cx="32" cy="32" r="2" fill="#FFFFFF"/>
+      </svg>
+    </div>
+
+    <!-- Bird 4 -->
+    <div class="bird-track-4">
+      <svg class="bird-svg" viewBox="0 0 64 64" fill="none">
+        <path class="wing-left" d="M32 32 C24 16 12 18 2 24 C14 26 26 30 32 32 Z" fill="#C084FC" fill-opacity="0.65"/>
+        <path class="wing-right" d="M32 32 C40 16 52 18 62 24 C50 26 38 30 32 32 Z" fill="#9333EA" fill-opacity="0.55"/>
+        <circle cx="32" cy="32" r="2.5" fill="#FFFFFF"/>
+      </svg>
+    </div>
+  </div>
 
   <!-- Header -->
   <header>
     <div class="container navbar">
       <a href="#" class="nav-brand">
-        <img src="logo.svg" alt="Gemini Antigravity Logo">
-        <span>Gemini Antigravity</span>
+        <img src="icon-black.png" alt="Black Logo">
+        <span>Micosoft_office_google_antigravity_plugin</span>
       </a>
       <ul class="nav-links">
+        <li><a href="#problematic">Inspiration</a></li>
         <li><a href="#showcase">Evidence</a></li>
-        <li><a href="#capabilities">Capabilities Matrix</a></li>
+        <li><a href="#capabilities">Matrix & Issues</a></li>
         <li><a href="#install">Installation</a></li>
         <li><a href="#contributing">Contributing (dev)</a></li>
         <li><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" target="_blank">GitHub</a></li>
       </ul>
-      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-primary" target="_blank">
+      <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-neon" target="_blank">
         Download v1.0.0 Setup
       </a>
     </div>
@@ -451,20 +803,36 @@
   <main class="container">
     <!-- Hero Section -->
     <section class="hero">
-      <div class="version-badge">
-        <span class="dot"></span>
-        v1.0.0 Production Release Live
+      <div class="hero-badge">
+        <span class="pulse-light"></span>
+        v1.0.0 Production Release Live • Open Source Hobby Project
       </div>
-      <h1>Autonomous AI Copilot for<br>Microsoft Office</h1>
-      <p class="lead">
-        Operates directly on native document objects inside Microsoft Word on Windows. Built with Google Gemini, Win32 COM automation, multimodal prompt attachments, and turnkey background daemon execution.
+
+      <h1>Micosoft_office_google_antigravity_plugin</h1>
+      <p class="hero-subtitle">
+        An Autonomous AI Copilot for Microsoft Office connected with Antigravity
       </p>
+
+      <!-- The Problematic & Inspiration Narrative Card -->
+      <div id="problematic" class="hero-story-card">
+        <p>
+          <strong>The Problematic:</strong> Standard office AI add-ins function merely as isolated sidebar chat windows—they generate markdown text, leaving the user to copy, paste, re-format tables, fix broken numbering, and assemble documents manually. They cannot perceive active document outlines, rewrite paragraphs in place without phantom duplications, or construct publication-grade tables natively.
+        </p>
+        <p>
+          <strong>The Inspiration:</strong> This project was directly inspired by <strong>Claude's deep desktop and workspace integration into office tools</strong>, where models don't just chat—they execute autonomous tools, parse document geometries, and apply changes directly onto the active workspace.
+        </p>
+        <p>
+          <span class="hobby-tag">🎨 Open-Source Hobby Scope</span>
+          This software is developed strictly as a <strong>personal open-source hobby and engineering exploration</strong>. It is <strong>NOT built for commercial uses</strong> or enterprise resale, but as an open research playground for the developer community.
+        </p>
+      </div>
+
       <div class="hero-actions">
-        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-primary" target="_blank">
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases" class="btn btn-neon" target="_blank">
           ⬇️ Download Standalone Installer (.exe)
         </a>
-        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn btn-secondary" target="_blank">
-          View Repository on GitHub
+        <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin" class="btn btn-ghost" target="_blank">
+          View on GitHub (Stars & Forks Welcome)
         </a>
       </div>
     </section>
@@ -473,7 +841,7 @@
     <section id="showcase" class="showcase">
       <div class="section-header">
         <h2>Production Evidence in Microsoft Word</h2>
-        <p>Live captures of Gemini Antigravity drafting and refining an executive technical dossier (<em>"Progetto di Automazione e Monitoraggio Esecutivo"</em>).</p>
+        <p>Real captures of the agent autonomously assembling an executive technical dossier (<em>"Progetto di Automazione e Monitoraggio Esecutivo"</em>).</p>
       </div>
 
       <div class="gallery-grid">
@@ -481,7 +849,7 @@
           <img src="images/01_document_drafting_table.png" alt="Document Drafting & Table Insertion">
           <div class="gallery-card-body">
             <h3>1. Document Drafting & Publication Tables</h3>
-            <p>Perceives document structure and inserts styled multi-column tables with auto-column width and native borders without phantom duplicates.</p>
+            <p>Perceives active paragraphs and creates <strong>Tabella 1</strong> with 3 columns, 6 records, automated column widths, and shaded headers with zero phantom duplicate tables.</p>
           </div>
         </div>
 
@@ -489,7 +857,7 @@
           <img src="images/02_business_financial_modeling.png" alt="Multi-Table Financial Modeling">
           <div class="gallery-card-body">
             <h3>2. Business & Financial Modeling</h3>
-            <p>Creates secondary budget allocation matrices comparing planned estimates against actual costs with structured numeric precision.</p>
+            <p>Generates secondary budget tracking matrices (<strong>Tabella 2</strong>) comparing planned allocations with actual costs and harmonized borders.</p>
           </div>
         </div>
 
@@ -497,7 +865,7 @@
           <img src="images/03_flowchart_diagram_generation.png" alt="Autonomous Process Flowcharts">
           <div class="gallery-card-body">
             <h3>3. Autonomous Process Flowcharts</h3>
-            <p>Renders visual milestone roadmaps, KPI badges, and phase cards directly into the Word document flow.</p>
+            <p>Renders visual milestone roadmaps, KPI cards, and process phases (<strong>Figura 1</strong>) directly onto the Word document canvas.</p>
           </div>
         </div>
 
@@ -505,36 +873,44 @@
           <img src="images/04_iterative_refinement_styling.png" alt="Multi-Turn Conversational Memory">
           <div class="gallery-card-body">
             <h3>4. Conversational Memory & Taskpane</h3>
-            <p>Multi-turn session persistence, interactive conversation drawer, real-time token streaming, and instant task abortion via <code>Esc</code>.</p>
+            <p>Interactive session drawer, conversation switching, real-time SSE token delivery, and immediate abort via the <code>Esc</code> key.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Capabilities Matrix -->
+    <!-- Capabilities Matrix & Legend -->
     <section id="capabilities" class="matrix-section">
       <div class="section-header">
         <h2>Engineering Capabilities & Reality Matrix</h2>
-        <p>Total transparency: what works today in production versus features under active engineering and roadmap exploration.</p>
+        <p>Explicit transparency on current production features versus in-progress modules tracked in GitHub issues.</p>
       </div>
 
-      <!-- Legend Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
-          <span class="badge-status badge-prod" style="margin-bottom: 8px;">● Production</span>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Fully functional, end-to-end verified with live COM integration, tested in CI, and bundled into the standalone installer.</p>
+      <!-- Status Legend -->
+      <div class="legend-grid">
+        <div class="legend-card">
+          <div class="legend-title" style="color: #34D399;">
+            <span class="badge-status badge-prod">Production</span>
+          </div>
+          <p>Fully functional and battle-tested. Win32 COM automation is live in desktop Word and bundled in the installer.</p>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
-          <span class="badge-status badge-partial" style="margin-bottom: 8px;">● In Progress</span>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Active core development. Foundational COM endpoints exist; full parity (formula linking, vector shapes) is tracked in GitHub Issues.</p>
+        <div class="legend-card">
+          <div class="legend-title" style="color: #FBBF24;">
+            <span class="badge-status badge-partial">In Progress</span>
+          </div>
+          <p>Active core development. Foundational COM endpoints exist; full parity is tracked in open GitHub issues.</p>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
-          <span class="badge-status badge-stub" style="margin-bottom: 8px;">● UI Blueprint</span>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Visual interface design present in the taskpane to define UX workflows. Backend execution sandboxes and OAuth connectors not yet wired.</p>
+        <div class="legend-card">
+          <div class="legend-title" style="color: #C084FC;">
+            <span class="badge-status badge-stub">UI Blueprint</span>
+          </div>
+          <p>Visual taskpane UI elements designed to define user interaction patterns. Dynamic backend sandboxes in progress.</p>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px;">
-          <span class="badge-status badge-unsupported" style="margin-bottom: 8px;">● Not Supported</span>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">Outside current scope due to platform boundaries (e.g. macOS native COM). Pure Office.js fallbacks welcome via PRs.</p>
+        <div class="legend-card">
+          <div class="legend-title" style="color: #FB7185;">
+            <span class="badge-status badge-unsupported">Not Supported</span>
+          </div>
+          <p>Outside current architectural scope (e.g. macOS native COM). Pure Office.js fallbacks welcome via PRs.</p>
         </div>
       </div>
 
@@ -542,60 +918,83 @@
         <thead>
           <tr>
             <th>Module / Capability</th>
-            <th>Status</th>
-            <th>Implementation Details</th>
+            <th>Maturity Status</th>
+            <th>Implementation Details & Reality</th>
+            <th>GitHub Issue / Tracker</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Microsoft Word Win32 COM Engine</strong></td>
+            <td><strong>Microsoft Word Win32 COM Automation</strong></td>
             <td><span class="badge-status badge-prod">● Production</span></td>
-            <td>In-place rewrites, native table insertion, direct formatting, styles, and outline inspection.</td>
+            <td>In-place rewrites, native table insertion, direct formatting, styles, outline inspection.</td>
+            <td>Verified Production</td>
           </tr>
           <tr>
             <td><strong>Multimodal Prompt Image Attachments</strong></td>
             <td><span class="badge-status badge-prod">● Production</span></td>
-            <td>Clipboard screenshot paste (<code>Ctrl+V</code>), photo picker, drag & drop, and local caching.</td>
+            <td>Clipboard paste (<code>Ctrl+V</code>), photo picker, drag & drop, and local caching.</td>
+            <td>Verified Production</td>
           </tr>
           <tr>
             <td><strong>Gemini Imagen 3 AI Image Generation</strong></td>
             <td><span class="badge-status badge-prod">● Production</span></td>
-            <td>Activated via personal Gemini API key in Settings; generates and embeds figures with captions.</td>
+            <td>Activated via user Gemini API key in Settings; generates and embeds figures with captions.</td>
+            <td>Verified Production</td>
           </tr>
           <tr>
-            <td><strong>Turnkey Standalone Windows Setup</strong></td>
+            <td><strong>Live Streaming & Task Interruption</strong></td>
             <td><span class="badge-status badge-prod">● Production</span></td>
-            <td>Self-contained 51 MB installer (<code>GeminiAntigravityOffice_Setup.exe</code>) with auto-certs and silent startup.</td>
+            <td>Real-time SSE token delivery with <code>⏹ Stop</code> button and <code>Esc</code> abort.</td>
+            <td>Verified Production</td>
           </tr>
           <tr>
-            <td><strong>Office Ribbon Home Tab Integration</strong></td>
+            <td><strong>Word Ribbon Home Tab Integration</strong></td>
             <td><span class="badge-status badge-prod">● Production</span></td>
-            <td>Registers manifest across all Windows UI languages (<code>en-US</code>, <code>fr-FR</code>, <code>it-IT</code>, <code>de-DE</code>, <code>es-ES</code>).</td>
+            <td>Permanent ribbon button across all installed Office languages (<code>en-US</code>, <code>fr-FR</code>, <code>it-IT</code>, <code>de-DE</code>, <code>es-ES</code>).</td>
+            <td>Verified Production</td>
+          </tr>
+          <tr>
+            <td><strong>One-Click Turnkey Windows Setup</strong></td>
+            <td><span class="badge-status badge-prod">● Production</span></td>
+            <td>Single 51 MB installer (<code>GeminiAntigravityOffice_Setup.exe</code>) with auto-certs and silent startup.</td>
+            <td>Verified Production</td>
           </tr>
           <tr>
             <td><strong>Excel 3-Statement Financial Modeling</strong></td>
             <td><span class="badge-status badge-partial">● In Progress</span></td>
-            <td>Basic table generation works; multi-sheet dynamic formula linkage is in development.</td>
+            <td>Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress.</td>
+            <td><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues" target="_blank">Issue #5: Excel Dynamic Modeling</a></td>
           </tr>
           <tr>
             <td><strong>PowerPoint Executive Storylining</strong></td>
             <td><span class="badge-status badge-partial">● In Progress</span></td>
-            <td>Slide generation works; complex shape coordinate layout is in development.</td>
+            <td>Slide creation and text boxes work; custom vector shape coordinate layout is in progress.</td>
+            <td><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues" target="_blank">Issue #6: PowerPoint Vector Layout</a></td>
           </tr>
           <tr>
-            <td><strong><code>/skills</code> Dynamic Execution</strong></td>
-            <td><span class="badge-status badge-stub">● UI Prototype</span></td>
-            <td>Onboarding buttons exist in UI; dynamic server-side sandbox execution is open for contribution.</td>
+            <td><strong><code>/skills</code> Dynamic Skill Execution</strong></td>
+            <td><span class="badge-status badge-stub">● UI Blueprint</span></td>
+            <td>The 6 pills (<code>/check-doc</code>, <code>/copy-edit</code>, etc.) are UI preview pills; dynamic server sandboxes are planned.</td>
+            <td><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues" target="_blank">Roadmap Issue #7: Dynamic Skill Engine</a></td>
           </tr>
           <tr>
-            <td><strong><code>/plugins</code> External Connectors</strong></td>
-            <td><span class="badge-status badge-stub">● UI Prototype</span></td>
-            <td>Flyout menu exists; live connectors (GitHub, Jira, Notion) are open for contribution.</td>
+            <td><strong><code>/plugins</code> & Custom Connectors Menu</strong></td>
+            <td><span class="badge-status badge-stub">● UI Blueprint</span></td>
+            <td>The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are unconnected stubs.</td>
+            <td><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues" target="_blank">Roadmap Issue #8: External Connectors</a></td>
           </tr>
           <tr>
-            <td><strong>macOS & Web Office.js Fallback</strong></td>
-            <td><span class="badge-status badge-unsupported">● Roadmap</span></td>
-            <td>Architecture currently requires native Windows Win32 COM and local Windows daemon IPC.</td>
+            <td><strong><code>search_web</code> Internet Research Tool</strong></td>
+            <td><span class="badge-status badge-stub">● UI Blueprint</span></td>
+            <td>The agent is strictly offline/document-bound; there is no live web search API integration connected.</td>
+            <td><a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/issues" target="_blank">Roadmap Issue #9: Live Search Integration</a></td>
+          </tr>
+          <tr>
+            <td><strong>macOS / Office Online (Web) Support</strong></td>
+            <td><span class="badge-status badge-unsupported">● Not Supported</span></td>
+            <td>Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC.</td>
+            <td>Architectural RFC</td>
           </tr>
         </tbody>
       </table>
@@ -604,25 +1003,25 @@
     <!-- Installation & Setup -->
     <section id="install" class="matrix-section">
       <div class="section-header">
-        <h2>Turnkey Installation (30 Seconds)</h2>
-        <p>No Python, Node.js, or command line required for end users.</p>
+        <h2>Turnkey Windows Installation</h2>
+        <p>Run the installer once and launch Microsoft Word. No terminal, Python, or Node.js required.</p>
       </div>
 
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-num">01</div>
           <h3>Download Setup</h3>
-          <p>Get <code>GeminiAntigravityOffice_Setup.exe</code> from the official GitHub Releases page.</p>
+          <p>Get <code>GeminiAntigravityOffice_Setup.exe</code> from official GitHub Releases.</p>
         </div>
         <div class="step-card">
           <div class="step-num">02</div>
           <h3>Run Setup Wizard</h3>
-          <p>Follow the installer wizard. It pre-installs the daemon, generates root TLS certificates, and sideloads the Office manifest automatically.</p>
+          <p>Follow the wizard. It automatically configures the daemon, generates root TLS certificates, and sideloads the Office manifest.</p>
         </div>
         <div class="step-card">
           <div class="step-num">03</div>
-          <h3>Open Word</h3>
-          <p>Launch Microsoft Word and click the <strong>Gemini</strong> button in the Home ribbon tab to start your copilot.</p>
+          <h3>Open Microsoft Word</h3>
+          <p>Open Word and click the <strong>Gemini</strong> button in the Home ribbon tab to start your copilot.</p>
         </div>
       </div>
     </section>
@@ -631,20 +1030,22 @@
     <section id="contributing" class="matrix-section">
       <div class="section-header">
         <h2>Open Source & Contributing</h2>
-        <p>We welcome pull requests to expand automation across the Microsoft Office suite.</p>
+        <p>This is a community hobby project. All Pull Requests must target the <strong><code>dev</code></strong> branch.</p>
       </div>
 
-      <div class="step-card" style="max-width: 800px; margin: 0 auto;">
-        <h3>🌿 Two-Tier Git Workflow</h3>
-        <p style="margin-bottom: 12px;">All active development takes place on the <strong><code>dev</code></strong> branch. Please open all Pull Requests against <strong><code>dev</code></strong>:</p>
-        <pre><code># 1. Clone & checkout development branch
+      <div class="step-card" style="max-width: 820px; margin: 0 auto;">
+        <h3>🌿 Two-Tier Git Branching Model</h3>
+        <p style="margin-bottom: 12px; color: var(--text-secondary);">
+          Branch off <strong><code>dev</code></strong> for features and bugfixes. Maintainers merge <strong><code>dev</code></strong> into <strong><code>main</code></strong> for official releases:
+        </p>
+        <pre><code># 1. Clone & checkout dev branch
 git checkout dev
 git pull origin dev
 
-# 2. Create your feature branch
+# 2. Create feature branch
 git checkout -b feat/my-new-feature
 
-# 3. Commit & push
+# 3. Commit with conventional commit messages
 git commit -m "feat: add support for custom chart themes"
 git push -u origin feat/my-new-feature
 
@@ -657,10 +1058,10 @@ git push -u origin feat/my-new-feature
   <footer>
     <div class="container">
       <p>
-        <strong>Gemini Antigravity for Microsoft Office</strong> • Created & Maintained by <a href="https://github.com/HassenChaaben" target="_blank">Hassen Ben Chaaben</a>
+        <strong>Micosoft_office_google_antigravity_plugin</strong> • An Open-Source Hobby Project by <a href="https://github.com/HassenChaaben" target="_blank">Hassen Ben Chaaben</a>
       </p>
-      <p style="margin-top: 8px;">
-        Released under the MIT License • Documentation hosted via GitHub Pages
+      <p style="margin-top: 8px; font-size: 0.8rem; color: #64748B;">
+        Not built for commercial use • Released under MIT License • Inspired by Claude Office Integration
       </p>
     </div>
   </footer>

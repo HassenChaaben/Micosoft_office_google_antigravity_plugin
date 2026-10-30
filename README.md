@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="assets/logo.svg" width="96" height="96" alt="Gemini Antigravity Logo">
+  <img src="assets/icon-256.png" width="96" height="96" alt="Micosoft_office_google_antigravity_plugin Logo">
 </p>
 
-<h1 align="center">Gemini Antigravity Microsoft Office Plugin</h1>
+<h1 align="center">Micosoft_office_google_antigravity_plugin</h1>
 
 <p align="center">
-  <b>Autonomous, Publication-Grade AI Copilot for Microsoft Office</b><br>
-  <i>Powered by Google Gemini and the Antigravity Agentic Cognitive Runtime</i>
+  <b>An Autonomous AI Copilot for Microsoft Office connected with Antigravity</b><br>
+  <i>An Open-Source Hobby Project inspired by Claude's Desktop Office Integration</i>
 </p>
 
 <p align="center">
@@ -23,7 +23,11 @@
 > **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
 
 > [!NOTE]
-> **Current Scope & Community Contributions**: Gemini Antigravity currently focuses on and is production-tested for **Microsoft Office (Word)** on Windows. We are actively waiting for and warmly welcoming **community contributions** to expand native automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform support for **macOS**! Check out the [Zero-Fluff Matrix](#-exact-capabilities--what-is-missing-zero-fluff-matrix) and open a PR against the `dev` branch.
+> **🎨 Open-Source Hobby Scope**: This project is developed strictly as a **personal open-source hobby and technical exploration**. It is **NOT built for commercial uses** or enterprise distribution.
+>
+> **💡 Problematic & Claude Inspiration**: Traditional Office AI assistants are limited to sidebar chat windows that generate markdown for manual copy-pasting. Inspired by **Claude's deep desktop and workspace integration into office tools**, this project allows an autonomous model to directly perceive document structure, edit paragraphs in-place without phantom duplicates, and generate native publication-grade tables and figures via local COM automation.
+>
+> **🌿 Community Contributions**: We warmly welcome open-source community contributions on the **`dev`** branch to expand automation to **Microsoft PowerPoint**, **Microsoft Excel**, and cross-platform **macOS** support!
 
 ---
 
