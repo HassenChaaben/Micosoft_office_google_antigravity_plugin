@@ -1,12 +1,21 @@
-# Gemini Antigravity Microsoft Office Plugin
+<p align="center">
+  <img src="assets/logo.svg" width="96" height="96" alt="Gemini Antigravity Logo">
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: Windows 11 / 10](https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4.svg?logo=windows)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin)
-[![Python: 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
-[![GitHub Releases](https://img.shields.io/badge/Release-v1.0.1--Standalone-success.svg)](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
+<h1 align="center">Gemini Antigravity Microsoft Office Plugin</h1>
 
-Autonomous, publication-grade AI Copilot for **Microsoft Word**, **Microsoft PowerPoint**, and **Microsoft Excel**, powered by **Google Gemini** and the **Antigravity** cognitive runtime.
+<p align="center">
+  <b>Autonomous, Publication-Grade AI Copilot for Microsoft Word, PowerPoint, and Excel</b><br>
+  <i>Powered by Google Gemini and the Antigravity Agentic Cognitive Runtime</i>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin"><img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4.svg?logo=windows" alt="Platform: Windows 11 / 10"></a>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python" alt="Python: 3.12"></a>
+  <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi" alt="FastAPI"></a>
+  <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases"><img src="https://img.shields.io/badge/Release-v1.0.1--Standalone-success.svg" alt="GitHub Releases"></a>
+</p>
 
 > 🔗 **Repository**: [https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin.git)  
 > 📦 **Download Standalone Setup**: [Releases / GeminiAntigravityOffice_Setup.exe](https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin/releases)
@@ -17,25 +26,25 @@ Autonomous, publication-grade AI Copilot for **Microsoft Word**, **Microsoft Pow
 
 The following real-world screenshots demonstrate Gemini Antigravity operating live inside Microsoft Word on an executive technical dossier (*"Progetto di Automazione e Monitoraggio Esecutivo"*):
 
-### 1. Interactive Document Drafting & Table Generation
-Creates publication-grade Word tables with specified headers, row counts, and auto-formatting directly from natural language prompts without creating duplicate paragraphs:
+### 1. Executive Document Drafting & Publication-Grade Table Insertion
+The user requests a comprehensive project delivery schedule. Gemini Antigravity perceives the document outline and inserts **Tabella 1** (*"Stato di avanzamento dei deliverable e della documentazione"*), populated with 6 records across 3 columns (`Elemento / Documento`, `Descrizione / Specifiche`, `Stato / Valore`), shaded header styling, automated column widths, and contextual narrative text without paragraph duplication:
 
-![Document Drafting & Table Generation](docs/images/01_document_drafting_table.png)
+![Executive Document Drafting & Table Insertion](docs/images/01_document_drafting_table.png)
 
 ### 2. Multi-Table Business & Financial Modeling
-Autonomously structures and formats complex financial breakdown tables (*Tabella 2 – Ripartizione Budget delle Fasi Operative*), harmonizing typography and grid styles with existing document content:
+The user asks to expand the dossier with budget allocation and financial tracking. The agent builds **Tabella 2** (*"Ripartizione Budget ed Economica delle Fasi Operative"*), comparing planned estimates against actual costs with formatted currency numbers and harmonized grid formatting matching the document's design tokens:
 
-![Business & Financial Modeling](docs/images/02_business_financial_modeling.png)
+![Multi-Table Financial Modeling](docs/images/02_business_financial_modeling.png)
 
-### 3. Autonomous Flowchart & Visual Diagramming
-Transforms structured tabular data into executive visual workflow diagrams (*Figura 1 – Diagramma di flusso e avanzamento per fasi*), embedded natively into the Word canvas:
+### 3. Autonomous Process Flowcharts & Executive Visual Cards
+Transforming raw tabular metrics into visual roadmap components. The agent generates **Figura 1** (*"Diagramma di flusso e avanzamento per fasi"*), creating a multi-stage visual process flow with milestone cards, KPI badges, and status colors directly rendered onto the Word canvas:
 
-![Visual Diagramming & Flowchart Generation](docs/images/03_flowchart_diagram_generation.png)
+![Autonomous Process Flowcharts & Executive Visual Cards](docs/images/03_flowchart_diagram_generation.png)
 
-### 4. Interactive Multi-Turn Refinement & Styling Control
-Iteratively modifies diagram colors, cleans up phantom blank pages, re-indexes headings, and synchronizes document styles through conversational chat in the taskpane:
+### 4. Multi-Turn Conversational Memory & Persistent Session Drawer
+Iterative refinement across complex documents. The user opens the **"Your conversations"** session drawer in the taskpane to view conversation history (`"cretae a table of 3 colu..."`), switch sessions, remove phantom blank pages, re-index headings, and customize diagram palettes:
 
-![Interactive Multi-Turn Refinement](docs/images/04_iterative_refinement_styling.png)
+![Multi-Turn Conversational Memory & Persistent Session Drawer](docs/images/04_iterative_refinement_styling.png)
 
 ---
 
@@ -73,21 +82,49 @@ Gemini Antigravity is an autonomous Office agent that operates directly on docum
 
 To provide total clarity on what this tool currently does and what remains on the roadmap:
 
-| Capability | Status | Implementation Details |
+| Capability | Status | Implementation Details & Current Reality |
 |---|:---:|---|
-| **Microsoft Word COM Automation** | ✅ Production | Paragraph rewrites, tables, formatting, styles, outline inspection |
-| **Multimodal Image Prompt Attachments** | ✅ Production | Clipboard paste (`Ctrl+V`), photo picker, drag & drop, local caching |
-| **Gemini Imagen 3 Image Generation** | ✅ Production | Activated when user enters Gemini API key in Settings |
-| **Live Streaming & Task Interruption** | ✅ Production | Real-time SSE token delivery with `⏹ Stop` button and `Esc` abort |
-| **Word Ribbon Home Tab Integration** | ✅ Production | Permanent ribbon button across all installed Office language packs |
-| **Offline Test Mock Mode** | ✅ Production | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`) |
-| **One-Click Turnkey Windows Setup** | ✅ Production | Single 49 MB installer (`GeminiAntigravityOffice_Setup.exe`) |
-| **Excel 3-Statement Financial Modeling** | ⚠️ Partial | Basic table output working; multi-sheet formula linkage in progress |
-| **PowerPoint Executive Storylining** | ⚠️ Partial | Slide creation working; custom shape coordinate layout in progress |
-| **macOS / Office Online (Web) Support** | ❌ Missing | Win32 COM is Windows-only; pure Office.js fallback required for macOS |
-| **Cross-Window Multi-Document Sync** | ❌ Missing | Agent targets active foreground document; multi-doc switching in progress |
+| **Microsoft Word Win32 COM Automation** | ✅ Production | Paragraph rewrites, native table insertion, direct formatting, styles, outline inspection. |
+| **Multimodal Image Prompt Attachments** | ✅ Production | Clipboard paste (`Ctrl+V`), photo picker (`#btnAttachPhoto`), drag & drop, local caching in `%LOCALAPPDATA%`. |
+| **Gemini Imagen 3 AI Image Generation** | ✅ Production | Activated when user enters Gemini API key in Settings; inserts illustrations with captions. |
+| **Live Streaming & Task Interruption** | ✅ Production | Real-time SSE token delivery with `⏹ Stop` button and `Esc` keyboard abort. |
+| **Word Ribbon Home Tab Integration** | ✅ Production | Permanent ribbon button across all installed Office language packs (`en-US`, `fr-FR`, `it-IT`, `de-DE`, `es-ES`). |
+| **Offline Test Mock Mode** | ✅ Production | Mock responses for headless CI test suites (`GEMINI_OFFICE_BACKEND=offline`). |
+| **One-Click Turnkey Windows Setup** | ✅ Production | Single 51 MB installer (`GeminiAntigravityOffice_Setup.exe`) with auto-cert and auto-registry injection. |
+| **`/skills` Dynamic Skill Execution** | ❌ Not Working Yet | The 6 pills (`/check-doc`, `/copy-edit`, etc.) are **UI preview pills** only; no isolated server-side skill sandboxes exist yet. |
+| **`/plugins` & Custom Connectors Menu** | ❌ Not Working Yet | The flyout menu exists in the UI, but external third-party API connectors (GitHub, Jira, Notion) are **unconnected stubs**. |
+| **`search_web` Internet Research Tool** | ❌ Not Working Yet | The agent is **strictly offline/document-bound**; there is no live web search API integration connected. |
+| **Excel 3-Statement Financial Modeling** | ⚠️ Partial | Basic table output and cell formatting work; dynamic multi-sheet formula linkage is in progress. |
+| **PowerPoint Executive Storylining** | ⚠️ Partial | Slide creation and text boxes work; custom vector shape coordinate layout is in progress. |
+| **macOS / Office Online (Web) Support** | ❌ Not Supported | Architecture relies strictly on native Windows Win32 COM and local Windows daemon IPC. |
+| **Cross-Window Multi-Document Sync** | ❌ Not Supported | Agent targets active foreground document; multi-doc switching across separate windows is in progress. |
 
 ---
+
+### Detailed Breakdown of Incomplete & Stubbed Features
+
+To ensure complete engineering transparency for contributors and users, here is exactly what is NOT yet functional:
+
+#### 1. The `/skills` Pills Are UI Blueprints Only (No Dynamic Server Execution)
+In the onboarding view of the taskpane, there are 6 clickable skill pill buttons:
+- `/check-doc` (Review structure & formatting)
+- `/copy-edit` (Enhance style & clarity)
+- `/summarize-contract` (Legal clause overview)
+- `/flag-issues` (Risk & discrepancy identification)
+- `/industry-overview` (Market analysis draft)
+- `/storylining` (Executive narrative structuring)
+
+> ⚠️ **Current Reality**: Clicking these buttons currently only pastes suggested starter text into `#promptInput`. There is **no dynamic server-side Python execution engine** that loads isolated skills from `daemon/skills/`. All requests are routed through the single monolithic `word_agent` / `gemini_client` prompt pipeline. PRs to introduce a modular skill runner are warmly welcomed!
+
+#### 2. The `/plugins` & Connectors Menu Is a Non-Functional Prototype
+In the input dock card, clicking the `+` flyout button displays a "Connectors" option (`#menuConnectors`) intended for third-party integrations (GitHub, Jira, Google Workspace, Notion).
+
+> ⚠️ **Current Reality**: This menu is currently a **visual mockup**. No backend API connectors exist to fetch remote files, synchronize issues, or query external tools. The agent currently only operates on the locally active Office document.
+
+#### 3. The `search_web` Tool Is Not Connected
+When the agent drafts scientific or business sections (e.g. the Quantum Computing overview on Page 5 of the sample document), users may expect live internet browsing or citations.
+
+> ⚠️ **Current Reality**: The agent currently has **no live search provider connected** (e.g., Google Custom Search API, Serper, or Tavily). The agent generates document text purely based on the LLM's parametric knowledge and the text extracted from the user's active document. Live web browsing and retrieval-augmented verification are planned for v1.1.0.
 
 ## 🚀 Quick Setup & Installation
 
