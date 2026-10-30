@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Non--Commercial-F59E0B.svg?style=flat-square" alt="License: PolyForm Noncommercial 1.0.0"></a>
   <a href="https://github.com/HassenChaaben/Micosoft_office_google_antigravity_plugin"><img src="https://img.shields.io/badge/Platform-Windows%2011%20%7C%2010-0078D4.svg?logo=windows" alt="Platform: Windows 11 / 10"></a>
   <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.12-3776AB.svg?logo=python" alt="Python: 3.12"></a>
   <a href="https://fastapi.tiangolo.com"><img src="https://img.shields.io/badge/FastAPI-0.115+-009688.svg?logo=fastapi" alt="FastAPI"></a>
@@ -243,7 +243,11 @@ To maintain release stability, we follow a strict two-tier branch workflow:
 
 ## License
 
-Distributed under the **MIT License**. See `LICENSE` for more information.
+Distributed under the **PolyForm Noncommercial License 1.0.0** (Personal, Educational & Research Use Only).
+
+See the full [**`LICENSE`**](LICENSE) for details.
+
+> **Non-Commercial Scope**: Anyone is free to use, run, inspect, and modify this software for personal hobby, research, and educational purposes. Commercial use, monetization, paid distribution, or enterprise resale is strictly prohibited without prior written permission from [Hassen Ben Chaaben](https://github.com/HassenChaaben).
 
 ---
 
